@@ -10,6 +10,7 @@ dependencies {
             project(':opencensus-api'),
             project(':opencensus-trace-logging-exporter'),
             project(':opencensus-trace-stackdriver-exporter'),
+            project(':opencensus-zpages'),
             libraries.google_auth,
             libraries.google_oauth2,
             libraries.grpc_auth,
@@ -54,10 +55,18 @@ task multiSpansContextTracing(type: CreateStartScripts) {
     classpath = jar.outputs.files + project.configurations.runtime
 }
 
+task zPagesTester(type: CreateStartScripts) {
+    mainClassName = 'io.opencensus.examples.zpages.Tester'
+    applicationName = 'ZPagesTester'
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
 applicationDistribution.into('bin') {
     from(multiSpansTracing)
     from(multiSpansScopedTracing)
     from(multiSpansContextTracing)
     from(statsRunner)
+    from(zPagesTester)
     fileMode = 0755
 }
