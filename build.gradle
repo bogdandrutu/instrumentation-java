@@ -104,14 +104,21 @@ subprojects {
         guavaVersion = '19.0'
 
         libraries = [
-                auto_value     : "com.google.auto.value:auto-value:${autoValueVersion}",
+                auto_value        : "com.google.auto.value:auto-value:${autoValueVersion}",
                 byte_buddy   : 'net.bytebuddy:byte-buddy:1.7.1',
-                disruptor    : 'com.lmax:disruptor:3.3.6',
-                errorprone   : 'com.google.errorprone:error_prone_annotations:2.0.11',
+                disruptor         : 'com.lmax:disruptor:3.3.6',
+                errorprone        : 'com.google.errorprone:error_prone_annotations:2.0.11',
                 findbugs_annotations : "com.google.code.findbugs:annotations:${findBugsVersion}",
-                grpc_context : "io.grpc:grpc-context:${grpcContextVersion}",
-                guava        : "com.google.guava:guava:${guavaVersion}",
-                jsr305       : "com.google.code.findbugs:jsr305:${findBugsVersion}",
+                google_auth       : 'com.google.auth:google-auth-library-credentials:0.7.0',
+                google_oauth2     : 'com.google.auth:google-auth-library-oauth2-http:0.7.0',
+                grpc_auth         : "io.grpc:grpc-auth:${grpcContextVersion}",
+                grpc_context      : "io.grpc:grpc-context:${grpcContextVersion}",
+                grpc_core         : "io.grpc:grpc-core:${grpcContextVersion}",
+                grpc_netty        : "io.grpc:grpc-netty:${grpcContextVersion}",
+                guava             : "com.google.guava:guava:${guavaVersion}",
+                jsr305            : "com.google.code.findbugs:jsr305:${findBugsVersion}",
+                netty             : 'io.netty:netty-tcnative-boringssl-static:2.0.3.Final',
+                stackdriver_trace : 'com.google.api.grpc:grpc-google-devtools-cloudtrace-v1:0.1.1',
 
                 // Test dependencies.
                 guava_testlib  : "com.google.guava:guava-testlib:${guavaVersion}",

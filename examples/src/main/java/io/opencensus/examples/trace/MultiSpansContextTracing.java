@@ -13,11 +13,15 @@
 
 package io.opencensus.examples.trace;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.export.LoggingExportHandler;
+import io.opencensus.trace.exporter.StackdriverExporter;
+import io.opencensus.trace.samplers.Samplers;
+import java.io.IOException;
 
 /**
  * Example showing how to create a child {@link Span}, install it to the current context and add
@@ -51,9 +55,16 @@ public final class MultiSpansContextTracing {
    *
    * @param args the main arguments.
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
+    StackdriverExporter stackdriverExporter =
+        StackdriverExporter.create(GoogleCredentials.getApplicationDefault(), "e2e-debugging");
+    stackdriverExporter.register(Tracing.getExportComponent().getSpanExporter());
     LoggingExportHandler.register(Tracing.getExportComponent().getSpanExporter());
-    Span span = tracer.spanBuilderWithExplicitParent("MyRootSpan", null).startSpan();
+    Span span =
+        tracer
+            .spanBuilderWithExplicitParent("MyRootSpan", null)
+            .setSampler(Samplers.alwaysSample())
+            .startSpan();
     try (Scope ws = tracer.withSpan(span)) {
       doWork();
     }

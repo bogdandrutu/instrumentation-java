@@ -1,0 +1,11 @@
+description = 'OpenCensus Trace Stackdriver Exporter'
+
+dependencies {
+    compile project(':opencensus-api'),
+            libraries.google_auth,
+            libraries.stackdriver_trace
+
+    testCompile project(':opencensus-api')
+
+    signature "org.codehaus.mojo.signature:java16:+@signature"
+}
