@@ -3,6 +3,10 @@ description = 'OpenCensus Trace Stackdriver Exporter'
 dependencies {
     compile project(':opencensus-api'),
             libraries.google_auth,
+            libraries.google_oauth2,
+            libraries.grpc_auth,
+            libraries.grpc_core,
+            libraries.grpc_netty,
             libraries.stackdriver_trace
 
     testCompile project(':opencensus-api')

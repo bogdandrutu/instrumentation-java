@@ -11,12 +11,7 @@ dependencies {
             project(':opencensus-trace-logging-exporter'),
             project(':opencensus-trace-stackdriver-exporter'),
             project(':opencensus-zpages'),
-            libraries.google_auth,
-            libraries.google_oauth2,
-            libraries.grpc_auth,
-            libraries.grpc_core,
-            libraries.grpc_netty,
-            libraries.netty
+            libraries.google_auth
 
     runtime project(':core_impl_java'),
             project(':opencensus-impl')

@@ -13,7 +13,10 @@
 
 package io.opencensus.examples.zpages;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import com.sun.net.httpserver.HttpServer;
+import io.opencensus.trace.Tracing;
+import io.opencensus.trace.exporter.StackdriverExporter;
 import io.opencensus.zpages.TracezHttpHandler;
 import io.opencensus.zpages.TracezPageFormatter;
 import java.net.InetSocketAddress;
@@ -28,6 +31,9 @@ public class Tester {
 
   /** Main method. */
   public static void main(String[] args) throws Exception {
+    StackdriverExporter stackdriverExporter =
+        StackdriverExporter.create(GoogleCredentials.getApplicationDefault(), "e2e-debugging");
+    stackdriverExporter.register(Tracing.getExportComponent().getSpanExporter());
     HttpServer server = HttpServer.create(new InetSocketAddress(8000), 10);
     server.createContext(TRACEZ_BASE_URL, new TracezHttpHandler());
     server.start();
