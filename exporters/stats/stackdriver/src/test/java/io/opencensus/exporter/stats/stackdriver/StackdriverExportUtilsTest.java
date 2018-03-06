@@ -31,8 +31,10 @@ import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
-import io.opencensus.common.Duration;
 import io.opencensus.common.Timestamp;
+import io.opencensus.exporter.stats.ViewData;
+import io.opencensus.exporter.stats.ViewDescription;
+import io.opencensus.stats.Aggregation;
 import io.opencensus.stats.Aggregation.Count;
 import io.opencensus.stats.Aggregation.Distribution;
 import io.opencensus.stats.Aggregation.Mean;
@@ -43,19 +45,15 @@ import io.opencensus.stats.AggregationData.MeanData;
 import io.opencensus.stats.AggregationData.SumDataDouble;
 import io.opencensus.stats.AggregationData.SumDataLong;
 import io.opencensus.stats.BucketBoundaries;
+import io.opencensus.stats.Measure;
 import io.opencensus.stats.Measure.MeasureDouble;
 import io.opencensus.stats.Measure.MeasureLong;
-import io.opencensus.stats.View;
-import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.View.AggregationWindow.Interval;
 import io.opencensus.stats.View.Name;
-import io.opencensus.stats.ViewData;
-import io.opencensus.stats.ViewData.AggregationWindowData.CumulativeData;
-import io.opencensus.stats.ViewData.AggregationWindowData.IntervalData;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.Rule;
@@ -83,9 +81,6 @@ public class StackdriverExportUtilsTest {
       MeasureLong.create("measure2", MEASURE_DESCRIPTION, MEASURE_UNIT);
   private static final String VIEW_NAME = "view";
   private static final String VIEW_DESCRIPTION = "view description";
-  private static final Duration TEN_SECONDS = Duration.create(10, 0);
-  private static final Cumulative CUMULATIVE = Cumulative.create();
-  private static final Interval INTERVAL = Interval.create(TEN_SECONDS);
   private static final BucketBoundaries BUCKET_BOUNDARIES =
       BucketBoundaries.create(Arrays.asList(0.0, 1.0, 3.0, 5.0));
   private static final Sum SUM = Sum.create();
@@ -114,48 +109,67 @@ public class StackdriverExportUtilsTest {
                 .build());
   }
 
-  @Test
-  public void createMetricKind() {
-    assertThat(StackdriverExportUtils.createMetricKind(CUMULATIVE))
-        .isEqualTo(MetricKind.CUMULATIVE);
-    assertThat(StackdriverExportUtils.createMetricKind(INTERVAL))
-        .isEqualTo(MetricKind.UNRECOGNIZED);
+  private static ViewDescription getViewDescriptionForValueType(
+      Aggregation aggregation, Measure measure) {
+    return ViewDescription.create(
+        Name.create(VIEW_NAME),
+        VIEW_DESCRIPTION,
+        measure,
+        aggregation,
+        Collections.<TagKey>emptyList());
   }
 
   @Test
   public void createValueType() {
-    assertThat(StackdriverExportUtils.createValueType(SUM, MEASURE_DOUBLE))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(SUM, MEASURE_DOUBLE)))
         .isEqualTo(MetricDescriptor.ValueType.DOUBLE);
-    assertThat(StackdriverExportUtils.createValueType(SUM, MEASURE_LONG))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(SUM, MEASURE_LONG)))
         .isEqualTo(MetricDescriptor.ValueType.INT64);
-    assertThat(StackdriverExportUtils.createValueType(COUNT, MEASURE_DOUBLE))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(COUNT, MEASURE_DOUBLE)))
         .isEqualTo(MetricDescriptor.ValueType.INT64);
-    assertThat(StackdriverExportUtils.createValueType(COUNT, MEASURE_LONG))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(COUNT, MEASURE_LONG)))
         .isEqualTo(MetricDescriptor.ValueType.INT64);
-    assertThat(StackdriverExportUtils.createValueType(MEAN, MEASURE_DOUBLE))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(MEAN, MEASURE_DOUBLE)))
         .isEqualTo(MetricDescriptor.ValueType.DOUBLE);
-    assertThat(StackdriverExportUtils.createValueType(MEAN, MEASURE_LONG))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(MEAN, MEASURE_LONG)))
         .isEqualTo(MetricDescriptor.ValueType.DOUBLE);
-    assertThat(StackdriverExportUtils.createValueType(DISTRIBUTION, MEASURE_DOUBLE))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(DISTRIBUTION, MEASURE_DOUBLE)))
         .isEqualTo(MetricDescriptor.ValueType.DISTRIBUTION);
-    assertThat(StackdriverExportUtils.createValueType(DISTRIBUTION, MEASURE_LONG))
+    assertThat(
+            StackdriverExportUtils.createValueType(
+                getViewDescriptionForValueType(DISTRIBUTION, MEASURE_LONG)))
         .isEqualTo(MetricDescriptor.ValueType.DISTRIBUTION);
   }
 
   @Test
   public void createMetric() {
-    View view =
-        View.create(
+    ViewDescription viewDescription =
+        ViewDescription.create(
             Name.create(VIEW_NAME),
             VIEW_DESCRIPTION,
             MEASURE_DOUBLE,
             DISTRIBUTION,
-            Arrays.asList(KEY),
-            CUMULATIVE);
-    assertThat(StackdriverExportUtils.createMetric(view, Arrays.asList(VALUE_1)))
+            Collections.singletonList(KEY));
+    assertThat(
+            StackdriverExportUtils.createMetric(
+                "opencensus.io", viewDescription, Collections.singletonList(VALUE_1)))
         .isEqualTo(
             Metric.newBuilder()
-                .setType("custom.googleapis.com/opencensus/" + VIEW_NAME)
+                .setType("custom.googleapis.com/opencensus.io/" + VIEW_NAME)
                 .putLabels("KEY", "VALUE1")
                 .putLabels(StackdriverExportUtils.OPENCENSUS_TASK, DEFAULT_TASK_VALUE)
                 .build());
@@ -163,18 +177,19 @@ public class StackdriverExportUtilsTest {
 
   @Test
   public void createMetric_skipNullTagValue() {
-    View view =
-        View.create(
+    ViewDescription viewDescription =
+        ViewDescription.create(
             Name.create(VIEW_NAME),
             VIEW_DESCRIPTION,
             MEASURE_DOUBLE,
             DISTRIBUTION,
-            Arrays.asList(KEY, KEY_2, KEY_3),
-            CUMULATIVE);
-    assertThat(StackdriverExportUtils.createMetric(view, Arrays.asList(VALUE_1, null, VALUE_2)))
+            Arrays.asList(KEY, KEY_2, KEY_3));
+    assertThat(
+            StackdriverExportUtils.createMetric(
+                "opencensus.io", viewDescription, Arrays.asList(VALUE_1, null, VALUE_2)))
         .isEqualTo(
             Metric.newBuilder()
-                .setType("custom.googleapis.com/opencensus/" + VIEW_NAME)
+                .setType("custom.googleapis.com/opencensus.io/" + VIEW_NAME)
                 .putLabels("KEY", "VALUE1")
                 .putLabels("KEY3", "VALUE2")
                 .putLabels(StackdriverExportUtils.OPENCENSUS_TASK, DEFAULT_TASK_VALUE)
@@ -183,18 +198,17 @@ public class StackdriverExportUtilsTest {
 
   @Test
   public void createMetric_throwWhenTagKeysAndValuesHaveDifferentSize() {
-    View view =
-        View.create(
+    ViewDescription viewDescription =
+        ViewDescription.create(
             Name.create(VIEW_NAME),
             VIEW_DESCRIPTION,
             MEASURE_DOUBLE,
             DISTRIBUTION,
-            Arrays.asList(KEY, KEY_2, KEY_3),
-            CUMULATIVE);
+            Arrays.asList(KEY, KEY_2, KEY_3));
     List<TagValue> tagValues = Arrays.asList(VALUE_1, null);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("TagKeys and TagValues don't have same size.");
-    StackdriverExportUtils.createMetric(view, tagValues);
+    StackdriverExportUtils.createMetric("opencensus.io", viewDescription, tagValues);
   }
 
   @Test
@@ -212,25 +226,15 @@ public class StackdriverExportUtilsTest {
   }
 
   @Test
-  public void createTimeInterval_cumulative() {
+  public void createTimeInterval() {
     Timestamp censusTimestamp1 = Timestamp.create(100, 3000);
     Timestamp censusTimestamp2 = Timestamp.create(200, 0);
-    assertThat(
-            StackdriverExportUtils.createTimeInterval(
-                CumulativeData.create(censusTimestamp1, censusTimestamp2)))
+    assertThat(StackdriverExportUtils.createTimeInterval(censusTimestamp1, censusTimestamp2))
         .isEqualTo(
             TimeInterval.newBuilder()
                 .setStartTime(StackdriverExportUtils.convertTimestamp(censusTimestamp1))
                 .setEndTime(StackdriverExportUtils.convertTimestamp(censusTimestamp2))
                 .build());
-  }
-
-  @Test
-  public void createTimeInterval_interval() {
-    IntervalData intervalData = IntervalData.create(Timestamp.create(200, 0));
-    // Only Cumulative view will supported in this version.
-    thrown.expect(IllegalArgumentException.class);
-    StackdriverExportUtils.createTimeInterval(intervalData);
   }
 
   @Test
@@ -282,51 +286,43 @@ public class StackdriverExportUtilsTest {
   }
 
   @Test
-  public void createPoint_cumulative() {
+  public void createPoint() {
     Timestamp censusTimestamp1 = Timestamp.create(100, 3000);
     Timestamp censusTimestamp2 = Timestamp.create(200, 0);
-    CumulativeData cumulativeData = CumulativeData.create(censusTimestamp1, censusTimestamp2);
     SumDataDouble sumDataDouble = SumDataDouble.create(33.3);
 
-    assertThat(StackdriverExportUtils.createPoint(sumDataDouble, cumulativeData, SUM))
+    assertThat(
+            StackdriverExportUtils.createPoint(
+                SUM, sumDataDouble, censusTimestamp1, censusTimestamp2))
         .isEqualTo(
             Point.newBuilder()
-                .setInterval(StackdriverExportUtils.createTimeInterval(cumulativeData))
+                .setInterval(
+                    StackdriverExportUtils.createTimeInterval(censusTimestamp1, censusTimestamp2))
                 .setValue(StackdriverExportUtils.createTypedValue(SUM, sumDataDouble))
                 .build());
   }
 
   @Test
-  public void createPoint_interval() {
-    IntervalData intervalData = IntervalData.create(Timestamp.create(200, 0));
-    SumDataDouble sumDataDouble = SumDataDouble.create(33.3);
-    // Only Cumulative view will supported in this version.
-    thrown.expect(IllegalArgumentException.class);
-    StackdriverExportUtils.createPoint(sumDataDouble, intervalData, SUM);
-  }
-
-  @Test
-  public void createMetricDescriptor_cumulative() {
-    View view =
-        View.create(
+  public void createMetricDescriptor() {
+    ViewDescription viewDescription =
+        ViewDescription.create(
             Name.create(VIEW_NAME),
             VIEW_DESCRIPTION,
             MEASURE_DOUBLE,
             DISTRIBUTION,
-            Arrays.asList(KEY),
-            CUMULATIVE);
+            Collections.singletonList(KEY));
     MetricDescriptor metricDescriptor =
-        StackdriverExportUtils.createMetricDescriptor(view, PROJECT_ID);
+        StackdriverExportUtils.createMetricDescriptor("opencensus.io", viewDescription, PROJECT_ID);
     assertThat(metricDescriptor.getName())
         .isEqualTo(
             "projects/"
                 + PROJECT_ID
-                + "/metricDescriptors/custom.googleapis.com/opencensus/"
+                + "/metricDescriptors/custom.googleapis.com/opencensus.io/"
                 + VIEW_NAME);
     assertThat(metricDescriptor.getDescription()).isEqualTo(VIEW_DESCRIPTION);
     assertThat(metricDescriptor.getDisplayName()).isEqualTo("OpenCensus/" + VIEW_NAME);
     assertThat(metricDescriptor.getType())
-        .isEqualTo("custom.googleapis.com/opencensus/" + VIEW_NAME);
+        .isEqualTo("custom.googleapis.com/opencensus.io/" + VIEW_NAME);
     assertThat(metricDescriptor.getUnit()).isEqualTo(MEASURE_UNIT);
     assertThat(metricDescriptor.getMetricKind()).isEqualTo(MetricKind.CUMULATIVE);
     assertThat(metricDescriptor.getValueType()).isEqualTo(MetricDescriptor.ValueType.DISTRIBUTION);
@@ -345,111 +341,88 @@ public class StackdriverExportUtilsTest {
   }
 
   @Test
-  public void createMetricDescriptor_interval() {
-    View view =
-        View.create(
+  public void createTimeSeriesList() {
+    ViewDescription viewDescription =
+        ViewDescription.create(
             Name.create(VIEW_NAME),
             VIEW_DESCRIPTION,
             MEASURE_DOUBLE,
             DISTRIBUTION,
-            Arrays.asList(KEY),
-            INTERVAL);
-    assertThat(StackdriverExportUtils.createMetricDescriptor(view, PROJECT_ID)).isNull();
-  }
-
-  @Test
-  public void createTimeSeriesList_cumulative() {
-    View view =
-        View.create(
-            Name.create(VIEW_NAME),
-            VIEW_DESCRIPTION,
-            MEASURE_DOUBLE,
-            DISTRIBUTION,
-            Arrays.asList(KEY),
-            CUMULATIVE);
+            Collections.singletonList(KEY));
     DistributionData distributionData1 =
         DistributionData.create(2, 3, 0, 5, 14, Arrays.asList(0L, 1L, 1L, 0L, 1L));
     DistributionData distributionData2 =
         DistributionData.create(-1, 1, -1, -1, 0, Arrays.asList(1L, 0L, 0L, 0L, 0L));
     Map<List<TagValue>, DistributionData> aggregationMap =
         ImmutableMap.of(
-            Arrays.asList(VALUE_1), distributionData1, Arrays.asList(VALUE_2), distributionData2);
-    CumulativeData cumulativeData =
-        CumulativeData.create(Timestamp.fromMillis(1000), Timestamp.fromMillis(2000));
-    ViewData viewData = ViewData.create(view, aggregationMap, cumulativeData);
+            Collections.singletonList(VALUE_1), distributionData1,
+            Collections.singletonList(VALUE_2), distributionData2);
+    Timestamp censusTimestamp1 = Timestamp.fromMillis(1000);
+    Timestamp censusTimestamp2 = Timestamp.fromMillis(2000);
+    ViewData viewData =
+        ViewData.create(viewDescription, censusTimestamp1, censusTimestamp2, aggregationMap);
     List<TimeSeries> timeSeriesList =
-        StackdriverExportUtils.createTimeSeriesList(viewData, DEFAULT_RESOURCE);
+        StackdriverExportUtils.createTimeSeriesList("opencensus.io", viewData, DEFAULT_RESOURCE);
     assertThat(timeSeriesList).hasSize(2);
     TimeSeries expected1 =
         TimeSeries.newBuilder()
             .setMetricKind(MetricKind.CUMULATIVE)
             .setValueType(MetricDescriptor.ValueType.DISTRIBUTION)
-            .setMetric(StackdriverExportUtils.createMetric(view, Arrays.asList(VALUE_1)))
+            .setMetric(
+                StackdriverExportUtils.createMetric(
+                    "opencensus.io", viewDescription, Collections.singletonList(VALUE_1)))
             .setResource(MonitoredResource.newBuilder().setType("global"))
             .addPoints(
-                StackdriverExportUtils.createPoint(distributionData1, cumulativeData, DISTRIBUTION))
+                StackdriverExportUtils.createPoint(
+                    DISTRIBUTION, distributionData1, censusTimestamp1, censusTimestamp2))
             .build();
     TimeSeries expected2 =
         TimeSeries.newBuilder()
             .setMetricKind(MetricKind.CUMULATIVE)
             .setValueType(MetricDescriptor.ValueType.DISTRIBUTION)
-            .setMetric(StackdriverExportUtils.createMetric(view, Arrays.asList(VALUE_2)))
+            .setMetric(
+                StackdriverExportUtils.createMetric(
+                    "opencensus.io", viewDescription, Collections.singletonList(VALUE_2)))
             .setResource(MonitoredResource.newBuilder().setType("global"))
             .addPoints(
-                StackdriverExportUtils.createPoint(distributionData2, cumulativeData, DISTRIBUTION))
+                StackdriverExportUtils.createPoint(
+                    DISTRIBUTION, distributionData2, censusTimestamp1, censusTimestamp2))
             .build();
     assertThat(timeSeriesList).containsExactly(expected1, expected2);
-  }
-
-  @Test
-  public void createTimeSeriesList_interval() {
-    View view =
-        View.create(
-            Name.create(VIEW_NAME),
-            VIEW_DESCRIPTION,
-            MEASURE_DOUBLE,
-            DISTRIBUTION,
-            Arrays.asList(KEY),
-            INTERVAL);
-    Map<List<TagValue>, DistributionData> aggregationMap =
-        ImmutableMap.of(
-            Arrays.asList(VALUE_1),
-            DistributionData.create(2, 3, 0, 5, 14, Arrays.asList(0L, 1L, 1L, 0L, 1L)),
-            Arrays.asList(VALUE_2),
-            DistributionData.create(-1, 1, -1, -1, 0, Arrays.asList(1L, 0L, 0L, 0L, 0L)));
-    ViewData viewData =
-        ViewData.create(view, aggregationMap, IntervalData.create(Timestamp.fromMillis(2000)));
-    assertThat(StackdriverExportUtils.createTimeSeriesList(viewData, DEFAULT_RESOURCE)).isEmpty();
   }
 
   @Test
   public void createTimeSeriesList_withCustomMonitoredResource() {
     MonitoredResource resource =
         MonitoredResource.newBuilder().setType("global").putLabels("key", "value").build();
-    View view =
-        View.create(
+    ViewDescription viewDescription =
+        ViewDescription.create(
             Name.create(VIEW_NAME),
             VIEW_DESCRIPTION,
             MEASURE_DOUBLE,
             SUM,
-            Arrays.asList(KEY),
-            CUMULATIVE);
+            Collections.singletonList(KEY));
     SumDataDouble sumData = SumDataDouble.create(55.5);
     Map<List<TagValue>, SumDataDouble> aggregationMap =
-        ImmutableMap.of(Arrays.asList(VALUE_1), sumData);
-    CumulativeData cumulativeData =
-        CumulativeData.create(Timestamp.fromMillis(1000), Timestamp.fromMillis(2000));
-    ViewData viewData = ViewData.create(view, aggregationMap, cumulativeData);
+        ImmutableMap.of(Collections.singletonList(VALUE_1), sumData);
+    Timestamp censusTimestamp1 = Timestamp.fromMillis(1000);
+    Timestamp censusTimestamp2 = Timestamp.fromMillis(2000);
+    ViewData viewData =
+        ViewData.create(viewDescription, censusTimestamp1, censusTimestamp2, aggregationMap);
     List<TimeSeries> timeSeriesList =
-        StackdriverExportUtils.createTimeSeriesList(viewData, resource);
+        StackdriverExportUtils.createTimeSeriesList("opencensus.io", viewData, resource);
     assertThat(timeSeriesList)
         .containsExactly(
             TimeSeries.newBuilder()
                 .setMetricKind(MetricKind.CUMULATIVE)
                 .setValueType(MetricDescriptor.ValueType.DOUBLE)
-                .setMetric(StackdriverExportUtils.createMetric(view, Arrays.asList(VALUE_1)))
+                .setMetric(
+                    StackdriverExportUtils.createMetric(
+                        "opencensus.io", viewDescription, Collections.singletonList(VALUE_1)))
                 .setResource(resource)
-                .addPoints(StackdriverExportUtils.createPoint(sumData, cumulativeData, SUM))
+                .addPoints(
+                    StackdriverExportUtils.createPoint(
+                        SUM, sumData, censusTimestamp1, censusTimestamp2))
                 .build());
   }
 }

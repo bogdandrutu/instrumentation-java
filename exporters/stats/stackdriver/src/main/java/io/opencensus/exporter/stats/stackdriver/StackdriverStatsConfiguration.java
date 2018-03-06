@@ -20,6 +20,9 @@ import com.google.api.MonitoredResource;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import io.opencensus.common.Duration;
+import io.opencensus.exporter.stats.ViewDataSource;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -74,13 +77,21 @@ public abstract class StackdriverStatsConfiguration {
   public abstract MonitoredResource getMonitoredResource();
 
   /**
+   * Returns the list of external ViewDataSource's.
+   *
+   * @return the list of external ViewDataSource's.
+   */
+  public abstract List<ViewDataSource> getExternalSources();
+
+  /**
    * Returns a new {@link Builder}.
    *
    * @return a {@code Builder}.
    * @since 0.11
    */
   public static Builder builder() {
-    return new AutoValue_StackdriverStatsConfiguration.Builder();
+    return new AutoValue_StackdriverStatsConfiguration.Builder()
+        .setExternalSources(Collections.<ViewDataSource>emptyList());
   }
 
   /**
@@ -128,6 +139,15 @@ public abstract class StackdriverStatsConfiguration {
      * @since 0.11
      */
     public abstract Builder setMonitoredResource(MonitoredResource monitoredResource);
+
+    /**
+     * Sets the the list of external ViewDataSource's.
+     *
+     * @param externalSources the Stackdriver {@code MonitoredResource}.
+     * @return this.
+     * @since 0.11
+     */
+    public abstract Builder setExternalSources(List<ViewDataSource> externalSources);
 
     /**
      * Builds a new {@link StackdriverStatsConfiguration} with current settings.

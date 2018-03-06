@@ -23,6 +23,10 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import io.opencensus.common.Duration;
+import io.opencensus.exporter.stats.OpenCensusViewDataSource;
+import io.opencensus.exporter.stats.ViewDataSource;
+import io.opencensus.stats.Stats;
+import java.util.Collections;
 import java.util.Date;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,11 +58,17 @@ public class StackdriverStatsConfigurationTest {
             .setProjectId(PROJECT_ID)
             .setExportInterval(DURATION)
             .setMonitoredResource(RESOURCE)
+            .setExternalSources(
+                Collections.<ViewDataSource>singletonList(
+                    new OpenCensusViewDataSource(Stats.getViewManager())))
             .build();
     assertThat(configuration.getCredentials()).isEqualTo(FAKE_CREDENTIALS);
     assertThat(configuration.getProjectId()).isEqualTo(PROJECT_ID);
     assertThat(configuration.getExportInterval()).isEqualTo(DURATION);
     assertThat(configuration.getMonitoredResource()).isEqualTo(RESOURCE);
+    assertThat(configuration.getExternalSources()).hasSize(1);
+    assertThat(configuration.getExternalSources().get(0))
+        .isInstanceOf(OpenCensusViewDataSource.class);
   }
 
   @Test
@@ -68,5 +78,6 @@ public class StackdriverStatsConfigurationTest {
     assertThat(configuration.getProjectId()).isNull();
     assertThat(configuration.getExportInterval()).isNull();
     assertThat(configuration.getMonitoredResource()).isNull();
+    assertThat(configuration.getExternalSources()).isEmpty();
   }
 }

@@ -24,21 +24,26 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.CreateTimeSeriesRequest;
+import com.google.monitoring.v3.MetricDescriptorName;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.opencensus.common.Duration;
 import io.opencensus.common.Scope;
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewData;
-import io.opencensus.stats.ViewManager;
+import io.opencensus.exporter.stats.ViewData;
+import io.opencensus.exporter.stats.ViewDataSource;
+import io.opencensus.exporter.stats.ViewDescription;
+import io.opencensus.stats.View.Name;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -67,9 +72,9 @@ final class StackdriverExporterWorker implements Runnable {
   private final String projectId;
   private final ProjectName projectName;
   private final MetricServiceClient metricServiceClient;
-  private final ViewManager viewManager;
+  private final List<ViewDataSource> sources;
   private final MonitoredResource monitoredResource;
-  private final Map<View.Name, View> registeredViews = new HashMap<View.Name, View>();
+  private final Map<String, Set<Name>> registeredViews = new HashMap<>();
 
   private static final Tracer tracer = Tracing.getTracer();
 
@@ -77,13 +82,13 @@ final class StackdriverExporterWorker implements Runnable {
       String projectId,
       MetricServiceClient metricServiceClient,
       Duration exportInterval,
-      ViewManager viewManager,
+      List<ViewDataSource> sources,
       MonitoredResource monitoredResource) {
     this.scheduleDelayMillis = toMillis(exportInterval);
     this.projectId = projectId;
     projectName = ProjectName.newBuilder().setProject(projectId).build();
     this.metricServiceClient = metricServiceClient;
-    this.viewManager = viewManager;
+    this.sources = sources;
     this.monitoredResource = monitoredResource;
 
     Tracing.getExportComponent()
@@ -95,22 +100,17 @@ final class StackdriverExporterWorker implements Runnable {
   // Returns true if the given view is successfully registered to Stackdriver Monitoring, or the
   // exact same view has already been registered. Returns false otherwise.
   @VisibleForTesting
-  boolean registerView(View view) {
-    View existing = registeredViews.get(view.getName());
-    if (existing != null) {
-      if (existing.equals(view)) {
-        // Ignore views that are already registered.
-        return true;
-      } else {
-        // If we upload a view that has the same name with a registered view but with different
-        // attributes, Stackdriver client will throw an exception.
-        logger.log(
-            Level.WARNING,
-            "A different view with the same name is already registered: " + existing);
-        return false;
-      }
+  boolean registerView(String sourceName, ViewDescription viewData) {
+    Set<Name> namesForSource = registeredViews.get(sourceName);
+    if (namesForSource == null) {
+      namesForSource = new HashSet<>();
+      registeredViews.put(sourceName, namesForSource);
     }
-    registeredViews.put(view.getName(), view);
+    if (namesForSource.contains(viewData.getName())) {
+      // Ignore views that are already registered.
+      return true;
+    }
+    namesForSource.add(viewData.getName());
 
     Span span = tracer.getCurrentSpan();
     span.addAnnotation("Create Stackdriver Metric.");
@@ -119,11 +119,7 @@ final class StackdriverExporterWorker implements Runnable {
       // canonical metrics. Registration is required only for custom view definitions. Canonical
       // views should be pre-registered.
       MetricDescriptor metricDescriptor =
-          StackdriverExportUtils.createMetricDescriptor(view, projectId);
-      if (metricDescriptor == null) {
-        // Don't register interval views in this version.
-        return false;
-      }
+          StackdriverExportUtils.createMetricDescriptor(sourceName, viewData, projectId);
 
       CreateMetricDescriptorRequest request =
           CreateMetricDescriptorRequest.newBuilder()
@@ -131,6 +127,11 @@ final class StackdriverExporterWorker implements Runnable {
               .setMetricDescriptor(metricDescriptor)
               .build();
       try {
+        metricServiceClient.deleteMetricDescriptor(
+            MetricDescriptorName.newBuilder()
+                .setProject(projectId)
+                .setMetricDescriptor(metricDescriptor.getType())
+                .build());
         metricServiceClient.createMetricDescriptor(request);
         span.addAnnotation("Finish creating MetricDescriptor.");
         return true;
@@ -156,43 +157,40 @@ final class StackdriverExporterWorker implements Runnable {
   // StackDriver.
   @VisibleForTesting
   void export() {
-    List</*@Nullable*/ ViewData> viewDataList = Lists.newArrayList();
-    for (View view : viewManager.getAllExportedViews()) {
-      if (registerView(view)) {
-        // Only upload stats for valid views.
-        viewDataList.add(viewManager.getView(view.getName()));
+    for (ViewDataSource source : sources) {
+      Collection</*@Nullable*/ ViewData> viewDataList = source.getViewData();
+      List<TimeSeries> timeSeriesList = Lists.newArrayList();
+      for (/*@Nullable*/ ViewData viewData : viewDataList) {
+        registerView(source.getName(), viewData.getViewDescription());
+        timeSeriesList.addAll(
+            StackdriverExportUtils.createTimeSeriesList(
+                source.getName(), viewData, monitoredResource));
       }
-    }
-
-    List<TimeSeries> timeSeriesList = Lists.newArrayList();
-    for (/*@Nullable*/ ViewData viewData : viewDataList) {
-      timeSeriesList.addAll(
-          StackdriverExportUtils.createTimeSeriesList(viewData, monitoredResource));
-    }
-    for (List<TimeSeries> batchedTimeSeries :
-        Lists.partition(timeSeriesList, MAX_BATCH_EXPORT_SIZE)) {
-      Span span = tracer.getCurrentSpan();
-      span.addAnnotation("Export Stackdriver TimeSeries.");
-      try (Scope scope = tracer.withSpan(span)) {
-        CreateTimeSeriesRequest request =
-            CreateTimeSeriesRequest.newBuilder()
-                .setName(projectName.toString())
-                .addAllTimeSeries(batchedTimeSeries)
-                .build();
-        metricServiceClient.createTimeSeries(request);
-        span.addAnnotation("Finish exporting TimeSeries.");
-      } catch (ApiException e) {
-        logger.log(Level.WARNING, "ApiException thrown when exporting TimeSeries.", e);
-        span.setStatus(
-            Status.CanonicalCode.valueOf(e.getStatusCode().getCode().name())
-                .toStatus()
-                .withDescription(
-                    "ApiException thrown when exporting TimeSeries: " + exceptionMessage(e)));
-      } catch (Throwable e) {
-        logger.log(Level.WARNING, "Exception thrown when exporting TimeSeries.", e);
-        span.setStatus(
-            Status.UNKNOWN.withDescription(
-                "Exception thrown when exporting TimeSeries: " + exceptionMessage(e)));
+      for (List<TimeSeries> batchedTimeSeries :
+          Lists.partition(timeSeriesList, MAX_BATCH_EXPORT_SIZE)) {
+        Span span = tracer.getCurrentSpan();
+        span.addAnnotation("Export Stackdriver TimeSeries.");
+        try (Scope scope = tracer.withSpan(span)) {
+          CreateTimeSeriesRequest request =
+              CreateTimeSeriesRequest.newBuilder()
+                  .setName(projectName.toString())
+                  .addAllTimeSeries(batchedTimeSeries)
+                  .build();
+          metricServiceClient.createTimeSeries(request);
+          span.addAnnotation("Finish exporting TimeSeries.");
+        } catch (ApiException e) {
+          logger.log(Level.WARNING, "ApiException thrown when exporting TimeSeries.", e);
+          span.setStatus(
+              Status.CanonicalCode.valueOf(e.getStatusCode().getCode().name())
+                  .toStatus()
+                  .withDescription(
+                      "ApiException thrown when exporting TimeSeries: " + exceptionMessage(e)));
+        } catch (Throwable e) {
+          logger.log(Level.WARNING, "Exception thrown when exporting TimeSeries.", e);
+          span.setStatus(
+              Status.UNKNOWN.withDescription(
+                  "Exception thrown when exporting TimeSeries: " + exceptionMessage(e)));
+        }
       }
     }
   }

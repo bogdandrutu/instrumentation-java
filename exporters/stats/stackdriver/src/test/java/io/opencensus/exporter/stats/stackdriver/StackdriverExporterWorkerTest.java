@@ -37,21 +37,21 @@ import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Empty;
 import io.opencensus.common.Duration;
 import io.opencensus.common.Timestamp;
+import io.opencensus.exporter.stats.OpenCensusViewDataSource;
+import io.opencensus.exporter.stats.ViewDataSource;
+import io.opencensus.exporter.stats.ViewDescription;
 import io.opencensus.stats.Aggregation.Sum;
 import io.opencensus.stats.AggregationData;
 import io.opencensus.stats.AggregationData.SumDataLong;
 import io.opencensus.stats.Measure.MeasureLong;
 import io.opencensus.stats.View;
 import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.View.AggregationWindow.Interval;
 import io.opencensus.stats.View.Name;
 import io.opencensus.stats.ViewData;
 import io.opencensus.stats.ViewData.AggregationWindowData.CumulativeData;
 import io.opencensus.stats.ViewManager;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -79,7 +79,6 @@ public class StackdriverExporterWorkerTest {
   private static final Name VIEW_NAME = Name.create("my view");
   private static final String VIEW_DESCRIPTION = "view description";
   private static final Cumulative CUMULATIVE = Cumulative.create();
-  private static final Interval INTERVAL = Interval.create(ONE_SECOND);
   private static final Sum SUM = Sum.create();
   private static final MonitoredResource DEFAULT_RESOURCE =
       MonitoredResource.newBuilder().setType("global").build();
@@ -114,14 +113,17 @@ public class StackdriverExporterWorkerTest {
   }
 
   @Test
-  public void export() throws IOException {
+  public void export() {
     View view =
-        View.create(VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Arrays.asList(KEY), CUMULATIVE);
+        View.create(
+            VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Collections.singletonList(KEY), CUMULATIVE);
+    Timestamp startTime = Timestamp.fromMillis(100);
+    Timestamp endTime = Timestamp.fromMillis(200);
     ViewData viewData =
         ViewData.create(
             view,
-            ImmutableMap.of(Arrays.asList(VALUE), SumDataLong.create(1)),
-            CumulativeData.create(Timestamp.fromMillis(100), Timestamp.fromMillis(200)));
+            ImmutableMap.of(Collections.singletonList(VALUE), SumDataLong.create(1)),
+            CumulativeData.create(startTime, endTime));
     doReturn(ImmutableSet.of(view)).when(mockViewManager).getAllExportedViews();
     doReturn(viewData).when(mockViewManager).getView(VIEW_NAME);
 
@@ -130,16 +132,24 @@ public class StackdriverExporterWorkerTest {
             PROJECT_ID,
             new FakeMetricServiceClient(mockStub),
             ONE_SECOND,
-            mockViewManager,
+            Collections.<ViewDataSource>singletonList(
+                new OpenCensusViewDataSource(mockViewManager)),
             DEFAULT_RESOURCE);
     worker.export();
 
     verify(mockStub, times(1)).createMetricDescriptorCallable();
     verify(mockStub, times(1)).createTimeSeriesCallable();
 
-    MetricDescriptor descriptor = StackdriverExportUtils.createMetricDescriptor(view, PROJECT_ID);
+    ViewDescription viewDescription = ViewDescription.create(view);
+    io.opencensus.exporter.stats.ViewData viewDataExporter =
+        io.opencensus.exporter.stats.ViewData.create(
+            ViewDescription.create(view), startTime, endTime, viewData.getAggregationMap());
+
+    MetricDescriptor descriptor =
+        StackdriverExportUtils.createMetricDescriptor("opencensus.io", viewDescription, PROJECT_ID);
     List<TimeSeries> timeSeries =
-        StackdriverExportUtils.createTimeSeriesList(viewData, DEFAULT_RESOURCE);
+        StackdriverExportUtils.createTimeSeriesList(
+            "opencensus.io", viewDataExporter, DEFAULT_RESOURCE);
     verify(mockCreateMetricDescriptorCallable, times(1))
         .call(
             eq(
@@ -159,7 +169,8 @@ public class StackdriverExporterWorkerTest {
   @Test
   public void doNotExportForEmptyViewData() {
     View view =
-        View.create(VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Arrays.asList(KEY), CUMULATIVE);
+        View.create(
+            VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Collections.singletonList(KEY), CUMULATIVE);
     ViewData empty =
         ViewData.create(
             view,
@@ -173,7 +184,8 @@ public class StackdriverExporterWorkerTest {
             PROJECT_ID,
             new FakeMetricServiceClient(mockStub),
             ONE_SECOND,
-            mockViewManager,
+            Collections.<ViewDataSource>singletonList(
+                new OpenCensusViewDataSource(mockViewManager)),
             DEFAULT_RESOURCE);
 
     worker.export();
@@ -184,80 +196,51 @@ public class StackdriverExporterWorkerTest {
   @Test
   public void doNotExportIfFailedToRegisterView() {
     View view =
-        View.create(VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Arrays.asList(KEY), CUMULATIVE);
+        View.create(
+            VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Collections.singletonList(KEY), CUMULATIVE);
     doReturn(ImmutableSet.of(view)).when(mockViewManager).getAllExportedViews();
     doThrow(new IllegalArgumentException()).when(mockStub).createMetricDescriptorCallable();
+    OpenCensusViewDataSource openCensusViewDataSource =
+        new OpenCensusViewDataSource(mockViewManager);
     StackdriverExporterWorker worker =
         new StackdriverExporterWorker(
             PROJECT_ID,
             new FakeMetricServiceClient(mockStub),
             ONE_SECOND,
-            mockViewManager,
+            Collections.<ViewDataSource>singletonList(openCensusViewDataSource),
             DEFAULT_RESOURCE);
 
-    assertThat(worker.registerView(view)).isFalse();
+    assertThat(
+            worker.registerView(openCensusViewDataSource.getName(), ViewDescription.create(view)))
+        .isFalse();
     worker.export();
     verify(mockStub, times(1)).createMetricDescriptorCallable();
     verify(mockStub, times(0)).createTimeSeriesCallable();
   }
 
   @Test
-  public void skipDifferentViewWithSameName() throws IOException {
-    StackdriverExporterWorker worker =
-        new StackdriverExporterWorker(
-            PROJECT_ID,
-            new FakeMetricServiceClient(mockStub),
-            ONE_SECOND,
-            mockViewManager,
-            DEFAULT_RESOURCE);
-    View view1 =
-        View.create(VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Arrays.asList(KEY), CUMULATIVE);
-    assertThat(worker.registerView(view1)).isTrue();
-    verify(mockStub, times(1)).createMetricDescriptorCallable();
-
-    View view2 =
-        View.create(
-            VIEW_NAME,
-            "This is a different description.",
-            MEASURE,
-            SUM,
-            Arrays.asList(KEY),
-            CUMULATIVE);
-    assertThat(worker.registerView(view2)).isFalse();
-    verify(mockStub, times(1)).createMetricDescriptorCallable();
-  }
-
-  @Test
   public void doNotCreateMetricDescriptorForRegisteredView() {
+    OpenCensusViewDataSource openCensusViewDataSource =
+        new OpenCensusViewDataSource(mockViewManager);
     StackdriverExporterWorker worker =
         new StackdriverExporterWorker(
             PROJECT_ID,
             new FakeMetricServiceClient(mockStub),
             ONE_SECOND,
-            mockViewManager,
+            Collections.<ViewDataSource>singletonList(openCensusViewDataSource),
             DEFAULT_RESOURCE);
     View view =
-        View.create(VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Arrays.asList(KEY), CUMULATIVE);
-    assertThat(worker.registerView(view)).isTrue();
+        View.create(
+            VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Collections.singletonList(KEY), CUMULATIVE);
+    assertThat(
+            worker.registerView(openCensusViewDataSource.getName(), ViewDescription.create(view)))
+        .isTrue();
     verify(mockStub, times(1)).createMetricDescriptorCallable();
 
-    assertThat(worker.registerView(view)).isTrue();
+    assertThat(
+            worker.registerView(openCensusViewDataSource.getName(), ViewDescription.create(view)))
+        .isTrue();
     verify(mockStub, times(1)).createMetricDescriptorCallable();
-  }
-
-  @Test
-  public void doNotCreateMetricDescriptorForIntervalView() {
-    StackdriverExporterWorker worker =
-        new StackdriverExporterWorker(
-            PROJECT_ID,
-            new FakeMetricServiceClient(mockStub),
-            ONE_SECOND,
-            mockViewManager,
-            DEFAULT_RESOURCE);
-    View view =
-        View.create(VIEW_NAME, VIEW_DESCRIPTION, MEASURE, SUM, Arrays.asList(KEY), INTERVAL);
-    assertThat(worker.registerView(view)).isFalse();
-    verify(mockStub, times(0)).createMetricDescriptorCallable();
   }
 
   /*

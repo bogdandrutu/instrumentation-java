@@ -1,0 +1,16 @@
+description = 'OpenCensus Stats Exporter API'
+
+[compileJava, compileTestJava].each() {
+    it.sourceCompatibility = 1.7
+    it.targetCompatibility = 1.7
+}
+
+dependencies {
+    compileOnly libraries.auto_value
+
+    compile project(':opencensus-api')
+
+    testCompile project(':opencensus-api')
+
+    signature "org.codehaus.mojo.signature:java17:+@signature"
+}

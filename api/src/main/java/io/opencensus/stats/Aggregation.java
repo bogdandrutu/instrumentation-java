@@ -50,11 +50,27 @@ public abstract class Aggregation {
    *
    * @since 0.8
    */
-  public abstract <T> T match(
+  public final <T> T match(
       Function<? super Sum, T> p0,
       Function<? super Count, T> p1,
       Function<? super Mean, T> p2,
       Function<? super Distribution, T> p3,
+      Function<? super Aggregation, T> defaultFunction) {
+    return match(p0, defaultFunction, p1, p2, p3, defaultFunction);
+  }
+
+  /**
+   * Applies the given match function to the underlying data type.
+   *
+   * @since 0.13
+   */
+  @SuppressWarnings("InconsistentOverloads")
+  public abstract <T> T match(
+      Function<? super Sum, T> p0,
+      Function<? super LastValue, T> p1,
+      Function<? super Count, T> p2,
+      Function<? super Mean, T> p3,
+      Function<? super Distribution, T> p4,
       Function<? super Aggregation, T> defaultFunction);
 
   /**
@@ -86,11 +102,50 @@ public abstract class Aggregation {
     @Override
     public final <T> T match(
         Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Mean, T> p2,
-        Function<? super Distribution, T> p3,
+        Function<? super LastValue, T> p1,
+        Function<? super Count, T> p2,
+        Function<? super Mean, T> p3,
+        Function<? super Distribution, T> p4,
         Function<? super Aggregation, T> defaultFunction) {
       return p0.apply(this);
+    }
+  }
+
+  /**
+   * Calculate sum on aggregated {@code MeasureValue}s.
+   *
+   * @since 0.8
+   */
+  @Immutable
+  @AutoValue
+  // Suppress Checker Framework warning about missing @Nullable in generated equals method.
+  @AutoValue.CopyAnnotations
+  @SuppressWarnings("nullness")
+  public abstract static class LastValue extends Aggregation {
+
+    LastValue() {}
+
+    private static final LastValue INSTANCE = new AutoValue_Aggregation_LastValue();
+
+    /**
+     * Construct a {@code Sum}.
+     *
+     * @return a new {@code Sum}.
+     * @since 0.8
+     */
+    public static LastValue create() {
+      return INSTANCE;
+    }
+
+    @Override
+    public final <T> T match(
+        Function<? super Sum, T> p0,
+        Function<? super LastValue, T> p1,
+        Function<? super Count, T> p2,
+        Function<? super Mean, T> p3,
+        Function<? super Distribution, T> p4,
+        Function<? super Aggregation, T> defaultFunction) {
+      return p1.apply(this);
     }
   }
 
@@ -123,11 +178,12 @@ public abstract class Aggregation {
     @Override
     public final <T> T match(
         Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Mean, T> p2,
-        Function<? super Distribution, T> p3,
+        Function<? super LastValue, T> p1,
+        Function<? super Count, T> p2,
+        Function<? super Mean, T> p3,
+        Function<? super Distribution, T> p4,
         Function<? super Aggregation, T> defaultFunction) {
-      return p1.apply(this);
+      return p2.apply(this);
     }
   }
 
@@ -160,11 +216,12 @@ public abstract class Aggregation {
     @Override
     public final <T> T match(
         Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Mean, T> p2,
-        Function<? super Distribution, T> p3,
+        Function<? super LastValue, T> p1,
+        Function<? super Count, T> p2,
+        Function<? super Mean, T> p3,
+        Function<? super Distribution, T> p4,
         Function<? super Aggregation, T> defaultFunction) {
-      return p2.apply(this);
+      return p3.apply(this);
     }
   }
 
@@ -205,11 +262,12 @@ public abstract class Aggregation {
     @Override
     public final <T> T match(
         Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Mean, T> p2,
-        Function<? super Distribution, T> p3,
+        Function<? super LastValue, T> p1,
+        Function<? super Count, T> p2,
+        Function<? super Mean, T> p3,
+        Function<? super Distribution, T> p4,
         Function<? super Aggregation, T> defaultFunction) {
-      return p3.apply(this);
+      return p4.apply(this);
     }
   }
 }

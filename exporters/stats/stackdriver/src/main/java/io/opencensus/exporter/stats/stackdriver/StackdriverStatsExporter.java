@@ -28,11 +28,15 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.opencensus.common.Duration;
+import io.opencensus.exporter.stats.OpenCensusViewDataSource;
+import io.opencensus.exporter.stats.ViewDataSource;
 import io.opencensus.stats.Stats;
-import io.opencensus.stats.ViewManager;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -79,12 +83,12 @@ public final class StackdriverStatsExporter {
       String projectId,
       MetricServiceClient metricServiceClient,
       Duration exportInterval,
-      ViewManager viewManager,
+      List<ViewDataSource> sources,
       MonitoredResource monitoredResource) {
     checkArgument(exportInterval.compareTo(ZERO) > 0, "Duration must be positive");
     StackdriverExporterWorker worker =
         new StackdriverExporterWorker(
-            projectId, metricServiceClient, exportInterval, viewManager, monitoredResource);
+            projectId, metricServiceClient, exportInterval, sources, monitoredResource);
     this.workerThread = new DaemonThreadFactory().newThread(worker);
   }
 
@@ -107,7 +111,8 @@ public final class StackdriverStatsExporter {
     checkNotNull(credentials, "credentials");
     checkNotNull(projectId, "projectId");
     checkNotNull(exportInterval, "exportInterval");
-    createInternal(credentials, projectId, exportInterval, null);
+    createInternal(
+        credentials, projectId, exportInterval, null, Collections.<ViewDataSource>emptyList());
   }
 
   /**
@@ -137,7 +142,7 @@ public final class StackdriverStatsExporter {
       throws IOException {
     checkNotNull(projectId, "projectId");
     checkNotNull(exportInterval, "exportInterval");
-    createInternal(null, projectId, exportInterval, null);
+    createInternal(null, projectId, exportInterval, null, Collections.<ViewDataSource>emptyList());
   }
 
   /**
@@ -170,7 +175,8 @@ public final class StackdriverStatsExporter {
         configuration.getCredentials(),
         configuration.getProjectId(),
         configuration.getExportInterval(),
-        configuration.getMonitoredResource());
+        configuration.getMonitoredResource(),
+        configuration.getExternalSources());
   }
 
   /**
@@ -198,7 +204,7 @@ public final class StackdriverStatsExporter {
    * @since 0.11.0
    */
   public static void createAndRegister() throws IOException {
-    createInternal(null, null, null, null);
+    createInternal(null, null, null, null, Collections.<ViewDataSource>emptyList());
   }
 
   /**
@@ -225,7 +231,7 @@ public final class StackdriverStatsExporter {
   @Deprecated
   public static void createAndRegister(Duration exportInterval) throws IOException {
     checkNotNull(exportInterval, "exportInterval");
-    createInternal(null, null, exportInterval, null);
+    createInternal(null, null, exportInterval, null, Collections.<ViewDataSource>emptyList());
   }
 
   /**
@@ -254,7 +260,12 @@ public final class StackdriverStatsExporter {
     checkNotNull(projectId, "projectId");
     checkNotNull(exportInterval, "exportInterval");
     checkNotNull(monitoredResource, "monitoredResource");
-    createInternal(null, projectId, exportInterval, monitoredResource);
+    createInternal(
+        null,
+        projectId,
+        exportInterval,
+        monitoredResource,
+        Collections.<ViewDataSource>emptyList());
   }
 
   /**
@@ -281,7 +292,8 @@ public final class StackdriverStatsExporter {
       Duration exportInterval, MonitoredResource monitoredResource) throws IOException {
     checkNotNull(exportInterval, "exportInterval");
     checkNotNull(monitoredResource, "monitoredResource");
-    createInternal(null, null, exportInterval, monitoredResource);
+    createInternal(
+        null, null, exportInterval, monitoredResource, Collections.<ViewDataSource>emptyList());
   }
 
   // Use createInternal() (instead of constructor) to enforce singleton.
@@ -289,7 +301,8 @@ public final class StackdriverStatsExporter {
       @Nullable Credentials credentials,
       @Nullable String projectId,
       @Nullable Duration exportInterval,
-      @Nullable MonitoredResource monitoredResource)
+      @Nullable MonitoredResource monitoredResource,
+      List<ViewDataSource> externalSources)
       throws IOException {
     projectId = projectId == null ? ServiceOptions.getDefaultProjectId() : projectId;
     exportInterval = exportInterval == null ? DEFAULT_INTERVAL : exportInterval;
@@ -307,13 +320,11 @@ public final class StackdriverStatsExporter {
                     .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
                     .build());
       }
+      List<ViewDataSource> allSources = Lists.newArrayList(externalSources);
+      allSources.add(new OpenCensusViewDataSource(Stats.getViewManager()));
       exporter =
           new StackdriverStatsExporter(
-              projectId,
-              metricServiceClient,
-              exportInterval,
-              Stats.getViewManager(),
-              monitoredResource);
+              projectId, metricServiceClient, exportInterval, allSources, monitoredResource);
       exporter.workerThread.start();
     }
   }
