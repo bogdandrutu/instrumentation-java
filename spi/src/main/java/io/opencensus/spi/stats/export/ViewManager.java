@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OpenCensus Authors
+ * Copyright 2016-17, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import io.opencensus.common.Functions;
 import io.opencensus.common.Timestamp;
 import io.opencensus.internal.Utils;
-import io.opencensus.stats.Measure.MeasureDouble;
-import io.opencensus.stats.Measure.MeasureLong;
-import io.opencensus.tags.TagContext;
+import io.opencensus.spi.stats.export.View.Name;
 import io.opencensus.tags.TagValue;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,47 +28,49 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
-/** No-op implementations of stats classes. */
-final class NoopStats {
-
-  private NoopStats() {}
+/**
+ * Provides facilities to register {@link View}s for collecting stats and retrieving stats data as a
+ * {@link ViewData}.
+ *
+ * @since 0.8
+ */
+public abstract class ViewManager {
+  /**
+   * Pull model for stats. Registers a {@link View} that will collect data to be accessed via {@link
+   * #getView(View.Name)}.
+   *
+   * @param view the {@code View} to be registered.
+   * @since 0.8
+   */
+  public abstract void registerView(View view);
 
   /**
-   * Returns a {@code StatsComponent} that has a no-op implementation for {@link StatsRecorder}.
+   * Returns the current stats data, {@link ViewData}, associated with the given view name.
    *
-   * @return a {@code StatsComponent} that has a no-op implementation for {@code StatsRecorder}.
+   * <p>Returns {@code null} if the {@code View} is not registered.
+   *
+   * @param view the name of {@code View} for the current stats.
+   * @return {@code ViewData} for the {@code View}, or {@code null} if the {@code View} is not
+   *     registered.
+   * @since 0.8
    */
-  static StatsComponent newNoopStatsComponent() {
-    return new NoopStatsComponent();
-  }
+  @Nullable
+  public abstract ViewData getView(View.Name view);
 
   /**
-   * Returns a {@code StatsRecorder} that does not record any data.
+   * Returns all registered views that should be exported.
    *
-   * @return a {@code StatsRecorder} that does not record any data.
-   */
-  static StatsRecorder getNoopStatsRecorder() {
-    return NoopStatsRecorder.INSTANCE;
-  }
-
-  /**
-   * Returns a {@code MeasureMap} that ignores all calls to {@link MeasureMap#put}.
+   * <p>This method should be used by any stats exporter that automatically exports data for views
+   * registered with the {@link ViewManager}.
    *
-   * @return a {@code MeasureMap} that ignores all calls to {@code MeasureMap#put}.
+   * @return all registered views that should be exported.
+   * @since 0.9
    */
-  static MeasureMap newNoopMeasureMap() {
-    return new NoopMeasureMap();
-  }
+  public abstract Set<View> getAllExportedViews();
 
   /**
    * Returns a {@code ViewManager} that maintains a map of views, but always returns empty {@link
@@ -84,84 +84,11 @@ final class NoopStats {
   }
 
   @ThreadSafe
-  private static final class NoopStatsComponent extends StatsComponent {
-    private final ViewManager viewManager = newNoopViewManager();
-    private volatile boolean isRead;
-
-    @Override
-    public ViewManager getViewManager() {
-      return viewManager;
-    }
-
-    @Override
-    public StatsRecorder getStatsRecorder() {
-      return getNoopStatsRecorder();
-    }
-
-    @Override
-    public StatsCollectionState getState() {
-      isRead = true;
-      return StatsCollectionState.DISABLED;
-    }
-
-    @Override
-    @Deprecated
-    public void setState(StatsCollectionState state) {
-      Utils.checkNotNull(state, "state");
-      Utils.checkState(!isRead, "State was already read, cannot set state.");
-    }
-  }
-
-  @Immutable
-  private static final class NoopStatsRecorder extends StatsRecorder {
-    static final StatsRecorder INSTANCE = new NoopStatsRecorder();
-
-    @Override
-    public MeasureMap newMeasureMap() {
-      return newNoopMeasureMap();
-    }
-  }
-
-  private static final class NoopMeasureMap extends MeasureMap {
-    private static final Logger logger = Logger.getLogger(NoopMeasureMap.class.getName());
-    private boolean hasUnsupportedValues;
-
-    @Override
-    public MeasureMap put(MeasureDouble measure, double value) {
-      if (value < 0) {
-        hasUnsupportedValues = true;
-      }
-      return this;
-    }
-
-    @Override
-    public MeasureMap put(MeasureLong measure, long value) {
-      if (value < 0) {
-        hasUnsupportedValues = true;
-      }
-      return this;
-    }
-
-    @Override
-    public void record() {}
-
-    @Override
-    public void record(TagContext tags) {
-      Utils.checkNotNull(tags, "tags");
-
-      if (hasUnsupportedValues) {
-        // drop all the recorded values
-        logger.log(Level.WARNING, "Dropping values, value to record must be non-negative.");
-      }
-    }
-  }
-
-  @ThreadSafe
   private static final class NoopViewManager extends ViewManager {
     private static final Timestamp ZERO_TIMESTAMP = Timestamp.create(0, 0);
 
     @GuardedBy("registeredViews")
-    private final Map<View.Name, View> registeredViews = new HashMap<View.Name, View>();
+    private final Map<Name, View> registeredViews = new HashMap<Name, View>();
 
     // Cached set of exported views. It must be set to null whenever a view is registered or
     // unregistered.

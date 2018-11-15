@@ -16,9 +16,9 @@
 
 package io.opencensus.implcore.stats;
 
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewData;
-import io.opencensus.stats.ViewManager;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.ViewData;
+import io.opencensus.spi.stats.export.ViewManager;
 import java.util.Set;
 import javax.annotation.Nullable;
 

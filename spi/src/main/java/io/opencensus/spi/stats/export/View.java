@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import com.google.auto.value.AutoValue;
 import io.opencensus.common.Duration;
@@ -22,6 +22,7 @@ import io.opencensus.common.Function;
 import io.opencensus.internal.DefaultVisibilityForTesting;
 import io.opencensus.internal.StringUtils;
 import io.opencensus.internal.Utils;
+import io.opencensus.stats.Measure;
 import io.opencensus.tags.TagKey;
 import java.util.ArrayList;
 import java.util.Collections;

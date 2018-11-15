@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -22,14 +22,14 @@ import com.google.common.testing.EqualsTester;
 import io.opencensus.common.Function;
 import io.opencensus.common.Functions;
 import io.opencensus.common.Timestamp;
-import io.opencensus.stats.AggregationData.CountData;
-import io.opencensus.stats.AggregationData.DistributionData;
-import io.opencensus.stats.AggregationData.DistributionData.Exemplar;
-import io.opencensus.stats.AggregationData.LastValueDataDouble;
-import io.opencensus.stats.AggregationData.LastValueDataLong;
-import io.opencensus.stats.AggregationData.MeanData;
-import io.opencensus.stats.AggregationData.SumDataDouble;
-import io.opencensus.stats.AggregationData.SumDataLong;
+import io.opencensus.spi.stats.export.AggregationData.CountData;
+import io.opencensus.spi.stats.export.AggregationData.DistributionData;
+import io.opencensus.spi.stats.export.AggregationData.DistributionData.Exemplar;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataLong;
+import io.opencensus.spi.stats.export.AggregationData.MeanData;
+import io.opencensus.spi.stats.export.AggregationData.SumDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.SumDataLong;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +41,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link io.opencensus.stats.AggregationData}. */
+/** Unit tests for {@link io.opencensus.spi.stats.export.AggregationData}. */
 @RunWith(JUnit4.class)
 public class AggregationDataTest {
 

@@ -20,6 +20,8 @@ import io.opencensus.internal.Utils;
 import io.opencensus.stats.Measure.MeasureDouble;
 import io.opencensus.stats.Measure.MeasureLong;
 import io.opencensus.tags.TagContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.NotThreadSafe;
 
 /**
@@ -64,12 +66,7 @@ public abstract class MeasureMap {
    * @since 0.16
    */
   // TODO(songya): make this method abstract in the 0.17 release.
-  public MeasureMap putAttachment(String key, String value) {
-    // Provides a default no-op implementation to avoid breaking other existing sub-classes.
-    Utils.checkNotNull(key, "key");
-    Utils.checkNotNull(value, "value");
-    return this;
-  }
+  public abstract MeasureMap putAttachment(String key, String value);
 
   /**
    * Records all of the measures at the same time, with the current {@link TagContext}.
@@ -89,4 +86,55 @@ public abstract class MeasureMap {
    * @since 0.8
    */
   public abstract void record(TagContext tags);
+
+  /**
+   * Returns a {@code MeasureMap} that ignores all calls to {@link MeasureMap#put}.
+   *
+   * @return a {@code MeasureMap} that ignores all calls to {@code MeasureMap#put}.
+   */
+  static MeasureMap newNoopMeasureMap() {
+    return new NoopMeasureMap();
+  }
+
+  private static final class NoopMeasureMap extends MeasureMap {
+    private static final Logger logger = Logger.getLogger(NoopMeasureMap.class.getName());
+    private boolean hasUnsupportedValues;
+
+    @Override
+    public MeasureMap put(MeasureDouble measure, double value) {
+      if (value < 0) {
+        hasUnsupportedValues = true;
+      }
+      return this;
+    }
+
+    @Override
+    public MeasureMap put(MeasureLong measure, long value) {
+      if (value < 0) {
+        hasUnsupportedValues = true;
+      }
+      return this;
+    }
+
+    @Override
+    public MeasureMap putAttachment(String key, String value) {
+      // Provides a default no-op implementation to avoid breaking other existing sub-classes.
+      Utils.checkNotNull(key, "key");
+      Utils.checkNotNull(value, "value");
+      return this;
+    }
+
+    @Override
+    public void record() {}
+
+    @Override
+    public void record(TagContext tags) {
+      Utils.checkNotNull(tags, "tags");
+
+      if (hasUnsupportedValues) {
+        // drop all the recorded values
+        logger.log(Level.WARNING, "Dropping values, value to record must be non-negative.");
+      }
+    }
+  }
 }

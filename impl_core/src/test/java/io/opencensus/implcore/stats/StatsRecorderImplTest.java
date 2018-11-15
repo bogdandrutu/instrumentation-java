@@ -26,23 +26,24 @@ import io.opencensus.common.Duration;
 import io.opencensus.common.Timestamp;
 import io.opencensus.implcore.internal.SimpleEventQueue;
 import io.opencensus.implcore.stats.StatsTestUtil.SimpleTagContext;
-import io.opencensus.stats.Aggregation.Count;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.Aggregation.Sum;
-import io.opencensus.stats.AggregationData.CountData;
-import io.opencensus.stats.AggregationData.DistributionData;
-import io.opencensus.stats.AggregationData.DistributionData.Exemplar;
-import io.opencensus.stats.BucketBoundaries;
+import io.opencensus.spi.stats.SpiStatsComponent;
+import io.opencensus.spi.stats.StatsCollectionState;
+import io.opencensus.spi.stats.export.Aggregation.Count;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.Aggregation.Sum;
+import io.opencensus.spi.stats.export.AggregationData.CountData;
+import io.opencensus.spi.stats.export.AggregationData.DistributionData;
+import io.opencensus.spi.stats.export.AggregationData.DistributionData.Exemplar;
+import io.opencensus.spi.stats.export.BucketBoundaries;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Cumulative;
+import io.opencensus.spi.stats.export.ViewData;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData.CumulativeData;
+import io.opencensus.spi.stats.export.ViewManager;
 import io.opencensus.stats.Measure.MeasureDouble;
 import io.opencensus.stats.MeasureMap;
-import io.opencensus.stats.StatsCollectionState;
 import io.opencensus.stats.StatsComponent;
 import io.opencensus.stats.StatsRecorder;
-import io.opencensus.stats.View;
-import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.ViewData;
-import io.opencensus.stats.ViewData.AggregationWindowData.CumulativeData;
-import io.opencensus.stats.ViewManager;
 import io.opencensus.tags.Tag;
 import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagKey;
@@ -78,10 +79,11 @@ public final class StatsRecorderImplTest {
   private static final Duration ONE_SECOND = Duration.fromMillis(1000);
 
   private final TestClock testClock = TestClock.create();
-  private final StatsComponent statsComponent =
-      new StatsComponentImplBase(new SimpleEventQueue(), testClock);
+  private final StatsManager statsManager = new StatsManager(new SimpleEventQueue(), testClock);
+  private final StatsComponent statsComponent = new StatsComponentImplBase(statsManager);
+  private final SpiStatsComponent spiStatsComponent = new SpiStatsComponentImplBase(statsManager);
 
-  private final ViewManager viewManager = statsComponent.getViewManager();
+  private final ViewManager viewManager = spiStatsComponent.getExportComponent().getViewManager();
   private final StatsRecorder statsRecorder = statsComponent.getStatsRecorder();
 
   @Test
@@ -301,7 +303,7 @@ public final class StatsRecorderImplTest {
             Cumulative.create());
 
     viewManager.registerView(view);
-    statsComponent.setState(StatsCollectionState.DISABLED);
+    spiStatsComponent.setState(StatsCollectionState.DISABLED);
     statsRecorder
         .newMeasureMap()
         .put(MEASURE_DOUBLE, 1.0)
@@ -322,14 +324,14 @@ public final class StatsRecorderImplTest {
             Cumulative.create());
     viewManager.registerView(view);
 
-    statsComponent.setState(StatsCollectionState.DISABLED);
+    spiStatsComponent.setState(StatsCollectionState.DISABLED);
     statsRecorder
         .newMeasureMap()
         .put(MEASURE_DOUBLE, 1.0)
         .record(new SimpleTagContext(Tag.create(KEY, VALUE)));
     assertThat(viewManager.getView(VIEW_NAME)).isEqualTo(createEmptyViewData(view));
 
-    statsComponent.setState(StatsCollectionState.ENABLED);
+    spiStatsComponent.setState(StatsCollectionState.ENABLED);
     assertThat(viewManager.getView(VIEW_NAME).getAggregationMap()).isEmpty();
     assertThat(viewManager.getView(VIEW_NAME).getWindowData())
         .isNotEqualTo(CumulativeData.create(ZERO_TIMESTAMP, ZERO_TIMESTAMP));

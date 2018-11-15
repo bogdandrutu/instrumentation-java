@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opencensus.spi.stats.export.ViewManager.newNoopViewManager;
 
 import io.opencensus.common.Duration;
 import io.opencensus.common.Timestamp;
-import io.opencensus.stats.Aggregation.Sum;
+import io.opencensus.spi.stats.export.Aggregation.Sum;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Cumulative;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Interval;
+import io.opencensus.spi.stats.export.View.Name;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData.CumulativeData;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData.IntervalData;
+import io.opencensus.stats.Measure;
 import io.opencensus.stats.Measure.MeasureDouble;
-import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.View.AggregationWindow.Interval;
-import io.opencensus.stats.View.Name;
-import io.opencensus.stats.ViewData.AggregationWindowData.CumulativeData;
-import io.opencensus.stats.ViewData.AggregationWindowData.IntervalData;
 import io.opencensus.tags.TagKey;
 import java.util.Arrays;
 import java.util.Set;
@@ -36,9 +38,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link NoopStats#newNoopViewManager}. */
+/** Unit tests for {@link io.opencensus.spi.stats.export.ViewManager}. */
 @RunWith(JUnit4.class)
-public final class NoopViewManagerTest {
+public final class ViewManagerTest {
   private static final MeasureDouble MEASURE =
       Measure.MeasureDouble.create("my measure", "description", "s");
   private static final TagKey KEY = TagKey.create("KEY");
@@ -52,14 +54,14 @@ public final class NoopViewManagerTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void noopViewManager_RegisterView_DisallowRegisteringDifferentViewWithSameName() {
+  public void registerView_DisallowRegisteringDifferentViewWithSameName() {
     final View view1 =
         View.create(
             VIEW_NAME, "description 1", MEASURE, AGGREGATION, Arrays.asList(KEY), CUMULATIVE);
     final View view2 =
         View.create(
             VIEW_NAME, "description 2", MEASURE, AGGREGATION, Arrays.asList(KEY), CUMULATIVE);
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+    ViewManager viewManager = newNoopViewManager();
     viewManager.registerView(view1);
 
     try {
@@ -72,34 +74,34 @@ public final class NoopViewManagerTest {
   }
 
   @Test
-  public void noopViewManager_RegisterView_AllowRegisteringSameViewTwice() {
+  public void registerView_AllowRegisteringSameViewTwice() {
     View view =
         View.create(
             VIEW_NAME, VIEW_DESCRIPTION, MEASURE, AGGREGATION, Arrays.asList(KEY), CUMULATIVE);
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+    ViewManager viewManager = newNoopViewManager();
     viewManager.registerView(view);
     viewManager.registerView(view);
   }
 
   @Test
-  public void noopViewManager_RegisterView_DisallowNull() {
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+  public void registerView_DisallowNull() {
+    ViewManager viewManager = newNoopViewManager();
     thrown.expect(NullPointerException.class);
     viewManager.registerView(null);
   }
 
   @Test
-  public void noopViewManager_GetView_GettingNonExistentViewReturnsNull() {
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+  public void getView_GettingNonExistentViewReturnsNull() {
+    ViewManager viewManager = newNoopViewManager();
     assertThat(viewManager.getView(VIEW_NAME)).isNull();
   }
 
   @Test
-  public void noopViewManager_GetView_Cumulative() {
+  public void getView_Cumulative() {
     View view =
         View.create(
             VIEW_NAME, VIEW_DESCRIPTION, MEASURE, AGGREGATION, Arrays.asList(KEY), CUMULATIVE);
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+    ViewManager viewManager = newNoopViewManager();
     viewManager.registerView(view);
 
     ViewData viewData = viewManager.getView(VIEW_NAME);
@@ -112,11 +114,11 @@ public final class NoopViewManagerTest {
   }
 
   @Test
-  public void noopViewManager_GetView_Interval() {
+  public void getView_Interval() {
     View view =
         View.create(
             VIEW_NAME, VIEW_DESCRIPTION, MEASURE, AGGREGATION, Arrays.asList(KEY), INTERVAL);
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+    ViewManager viewManager = newNoopViewManager();
     viewManager.registerView(view);
 
     ViewData viewData = viewManager.getView(VIEW_NAME);
@@ -126,15 +128,15 @@ public final class NoopViewManagerTest {
   }
 
   @Test
-  public void noopViewManager_GetView_DisallowNull() {
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+  public void getView_DisallowNull() {
+    ViewManager viewManager = newNoopViewManager();
     thrown.expect(NullPointerException.class);
     viewManager.getView(null);
   }
 
   @Test
   public void getAllExportedViews() {
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+    ViewManager viewManager = newNoopViewManager();
     assertThat(viewManager.getAllExportedViews()).isEmpty();
     View cumulativeView1 =
         View.create(
@@ -170,7 +172,7 @@ public final class NoopViewManagerTest {
 
   @Test
   public void getAllExportedViews_ResultIsUnmodifiable() {
-    ViewManager viewManager = NoopStats.newNoopViewManager();
+    ViewManager viewManager = newNoopViewManager();
     View view1 =
         View.create(
             View.Name.create("View 1"), VIEW_DESCRIPTION, MEASURE, AGGREGATION, Arrays.asList(KEY));

@@ -16,6 +16,10 @@
 
 package io.opencensus.stats;
 
+import static io.opencensus.stats.MeasureMap.newNoopMeasureMap;
+
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Provides methods to record stats against tags.
  *
@@ -31,4 +35,23 @@ public abstract class StatsRecorder {
    * @since 0.8
    */
   public abstract MeasureMap newMeasureMap();
+
+  /**
+   * Returns a {@code StatsRecorder} that does not record any data.
+   *
+   * @return a {@code StatsRecorder} that does not record any data.
+   */
+  static StatsRecorder getNoopStatsRecorder() {
+    return NoopStatsRecorder.INSTANCE;
+  }
+
+  @Immutable
+  private static final class NoopStatsRecorder extends StatsRecorder {
+    static final StatsRecorder INSTANCE = new NoopStatsRecorder();
+
+    @Override
+    public MeasureMap newMeasureMap() {
+      return newNoopMeasureMap();
+    }
+  }
 }

@@ -17,6 +17,7 @@
 package io.opencensus.stats;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opencensus.stats.StatsRecorder.getNoopStatsRecorder;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,32 +55,11 @@ public final class StatsTest {
         };
 
     assertThat(Stats.loadStatsComponent(classLoader).getClass().getName())
-        .isEqualTo("io.opencensus.stats.NoopStats$NoopStatsComponent");
+        .isEqualTo("io.opencensus.stats.StatsComponent$NoopStatsComponent");
   }
 
   @Test
   public void defaultValues() {
-    assertThat(Stats.getStatsRecorder()).isEqualTo(NoopStats.getNoopStatsRecorder());
-    assertThat(Stats.getViewManager()).isInstanceOf(NoopStats.newNoopViewManager().getClass());
-  }
-
-  @Test
-  public void getState() {
-    assertThat(Stats.getState()).isEqualTo(StatsCollectionState.DISABLED);
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  public void setState_IgnoresInput() {
-    Stats.setState(StatsCollectionState.ENABLED);
-    assertThat(Stats.getState()).isEqualTo(StatsCollectionState.DISABLED);
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  public void setState_DisallowsNull() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("state");
-    Stats.setState(null);
+    assertThat(Stats.getStatsRecorder()).isEqualTo(getNoopStatsRecorder());
   }
 }

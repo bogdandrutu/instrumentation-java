@@ -18,9 +18,9 @@ package io.opencensus.contrib.grpc.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import io.opencensus.stats.Stats;
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewManager;
+import io.opencensus.spi.stats.SpiStats;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.ViewManager;
 
 /**
  * Helper class that allows users to register rpc views easily.
@@ -137,7 +137,7 @@ public final class RpcViews {
    * @since 0.13
    */
   public static void registerAllGrpcViews() {
-    registerAllGrpcViews(Stats.getViewManager());
+    registerAllGrpcViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting
@@ -154,7 +154,7 @@ public final class RpcViews {
    * @since 0.16
    */
   public static void registerClientGrpcViews() {
-    registerClientGrpcViews(Stats.getViewManager());
+    registerClientGrpcViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting
@@ -172,7 +172,7 @@ public final class RpcViews {
    * @since 0.16
    */
   public static void registerServerGrpcViews() {
-    registerServerGrpcViews(Stats.getViewManager());
+    registerServerGrpcViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting
@@ -194,7 +194,7 @@ public final class RpcViews {
    */
   @Deprecated
   public static void registerAllCumulativeViews() {
-    registerAllCumulativeViews(Stats.getViewManager());
+    registerAllCumulativeViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting
@@ -214,7 +214,7 @@ public final class RpcViews {
    */
   @Deprecated
   public static void registerAllIntervalViews() {
-    registerAllIntervalViews(Stats.getViewManager());
+    registerAllIntervalViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting
@@ -237,7 +237,7 @@ public final class RpcViews {
    */
   @Deprecated
   public static void registerAllViews() {
-    registerAllViews(Stats.getViewManager());
+    registerAllViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -25,23 +25,24 @@ import io.opencensus.common.Duration;
 import io.opencensus.common.Function;
 import io.opencensus.common.Functions;
 import io.opencensus.common.Timestamp;
-import io.opencensus.stats.Aggregation.Count;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.Aggregation.LastValue;
-import io.opencensus.stats.Aggregation.Mean;
-import io.opencensus.stats.Aggregation.Sum;
-import io.opencensus.stats.AggregationData.CountData;
-import io.opencensus.stats.AggregationData.DistributionData;
-import io.opencensus.stats.AggregationData.LastValueDataDouble;
-import io.opencensus.stats.AggregationData.LastValueDataLong;
-import io.opencensus.stats.AggregationData.SumDataDouble;
-import io.opencensus.stats.AggregationData.SumDataLong;
-import io.opencensus.stats.View.AggregationWindow;
-import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.View.AggregationWindow.Interval;
-import io.opencensus.stats.ViewData.AggregationWindowData;
-import io.opencensus.stats.ViewData.AggregationWindowData.CumulativeData;
-import io.opencensus.stats.ViewData.AggregationWindowData.IntervalData;
+import io.opencensus.spi.stats.export.Aggregation.Count;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.Aggregation.LastValue;
+import io.opencensus.spi.stats.export.Aggregation.Mean;
+import io.opencensus.spi.stats.export.Aggregation.Sum;
+import io.opencensus.spi.stats.export.AggregationData.CountData;
+import io.opencensus.spi.stats.export.AggregationData.DistributionData;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataLong;
+import io.opencensus.spi.stats.export.AggregationData.SumDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.SumDataLong;
+import io.opencensus.spi.stats.export.View.AggregationWindow;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Cumulative;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Interval;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData.CumulativeData;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData.IntervalData;
+import io.opencensus.stats.Measure;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
 import java.util.Arrays;
@@ -57,6 +58,41 @@ import org.junit.runners.JUnit4;
 /** Tests for class {@link ViewData}. */
 @RunWith(JUnit4.class)
 public final class ViewDataTest {
+  // tag keys
+  private static final TagKey K1 = TagKey.create("k1");
+  private static final TagKey K2 = TagKey.create("k2");
+  private static final List<TagKey> TAG_KEYS = Arrays.asList(K1, K2);
+
+  // tag values
+  private static final TagValue V1 = TagValue.create("v1");
+  private static final TagValue V2 = TagValue.create("v2");
+  private static final TagValue V10 = TagValue.create("v10");
+  private static final TagValue V20 = TagValue.create("v20");
+
+  private static final AggregationWindow CUMULATIVE = Cumulative.create();
+  private static final AggregationWindow INTERVAL_HOUR = Interval.create(Duration.create(3600, 0));
+
+  private static final BucketBoundaries BUCKET_BOUNDARIES =
+      BucketBoundaries.create(Arrays.asList(10.0, 20.0, 30.0, 40.0));
+
+  private static final Aggregation DISTRIBUTION = Distribution.create(BUCKET_BOUNDARIES);
+
+  private static final ImmutableMap<List<TagValue>, DistributionData> ENTRIES =
+      ImmutableMap.of(
+          Arrays.asList(V1, V2),
+          DistributionData.create(1, 1, 0, Arrays.asList(0L, 1L, 0L)),
+          Arrays.asList(V10, V20),
+          DistributionData.create(-5, 6, 100.1, Arrays.asList(5L, 0L, 1L)));
+
+  // name
+  private static final View.Name NAME = View.Name.create("test-view");
+  // description
+  private static final String DESCRIPTION = "test-view-descriptor description";
+  // measure
+  private static final Measure MEASURE_DOUBLE =
+      Measure.MeasureDouble.create("measure1", "measure description", "1");
+  private static final Measure MEASURE_LONG =
+      Measure.MeasureLong.create("measure2", "measure description", "1");
 
   @Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -262,40 +298,4 @@ public final class ViewDataTest {
             + aggregationData.getClass().getSimpleName());
     ViewData.create(view, entries, cumulativeData);
   }
-
-  // tag keys
-  private static final TagKey K1 = TagKey.create("k1");
-  private static final TagKey K2 = TagKey.create("k2");
-  private static final List<TagKey> TAG_KEYS = Arrays.asList(K1, K2);
-
-  // tag values
-  private static final TagValue V1 = TagValue.create("v1");
-  private static final TagValue V2 = TagValue.create("v2");
-  private static final TagValue V10 = TagValue.create("v10");
-  private static final TagValue V20 = TagValue.create("v20");
-
-  private static final AggregationWindow CUMULATIVE = Cumulative.create();
-  private static final AggregationWindow INTERVAL_HOUR = Interval.create(Duration.create(3600, 0));
-
-  private static final BucketBoundaries BUCKET_BOUNDARIES =
-      BucketBoundaries.create(Arrays.asList(10.0, 20.0, 30.0, 40.0));
-
-  private static final Aggregation DISTRIBUTION = Distribution.create(BUCKET_BOUNDARIES);
-
-  private static final ImmutableMap<List<TagValue>, DistributionData> ENTRIES =
-      ImmutableMap.of(
-          Arrays.asList(V1, V2),
-          DistributionData.create(1, 1, 0, Arrays.asList(0L, 1L, 0L)),
-          Arrays.asList(V10, V20),
-          DistributionData.create(-5, 6, 100.1, Arrays.asList(5L, 0L, 1L)));
-
-  // name
-  private static final View.Name NAME = View.Name.create("test-view");
-  // description
-  private static final String DESCRIPTION = "test-view-descriptor description";
-  // measure
-  private static final Measure MEASURE_DOUBLE =
-      Measure.MeasureDouble.create("measure1", "measure description", "1");
-  private static final Measure MEASURE_LONG =
-      Measure.MeasureLong.create("measure2", "measure description", "1");
 }

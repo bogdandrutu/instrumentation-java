@@ -26,31 +26,35 @@ import io.opencensus.common.Duration;
 import io.opencensus.common.Timestamp;
 import io.opencensus.implcore.internal.SimpleEventQueue;
 import io.opencensus.implcore.tags.TagsComponentImplBase;
-import io.opencensus.stats.Aggregation;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.Aggregation.LastValue;
-import io.opencensus.stats.Aggregation.Mean;
-import io.opencensus.stats.Aggregation.Sum;
-import io.opencensus.stats.AggregationData;
-import io.opencensus.stats.AggregationData.LastValueDataDouble;
-import io.opencensus.stats.AggregationData.LastValueDataLong;
-import io.opencensus.stats.AggregationData.MeanData;
-import io.opencensus.stats.AggregationData.SumDataDouble;
-import io.opencensus.stats.AggregationData.SumDataLong;
-import io.opencensus.stats.BucketBoundaries;
+import io.opencensus.spi.stats.SpiStatsComponent;
+import io.opencensus.spi.stats.StatsCollectionState;
+import io.opencensus.spi.stats.export.Aggregation;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.Aggregation.LastValue;
+import io.opencensus.spi.stats.export.Aggregation.Mean;
+import io.opencensus.spi.stats.export.Aggregation.Sum;
+import io.opencensus.spi.stats.export.AggregationData;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataLong;
+import io.opencensus.spi.stats.export.AggregationData.MeanData;
+import io.opencensus.spi.stats.export.AggregationData.SumDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.SumDataLong;
+import io.opencensus.spi.stats.export.BucketBoundaries;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Cumulative;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Interval;
+import io.opencensus.spi.stats.export.View.Name;
+import io.opencensus.spi.stats.export.ViewData;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData.CumulativeData;
+import io.opencensus.spi.stats.export.ViewData.AggregationWindowData.IntervalData;
+import io.opencensus.spi.stats.export.ViewManager;
 import io.opencensus.stats.Measure;
 import io.opencensus.stats.Measure.MeasureDouble;
 import io.opencensus.stats.Measure.MeasureLong;
 import io.opencensus.stats.MeasureMap;
-import io.opencensus.stats.StatsCollectionState;
-import io.opencensus.stats.View;
-import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.View.AggregationWindow.Interval;
-import io.opencensus.stats.View.Name;
-import io.opencensus.stats.ViewData;
-import io.opencensus.stats.ViewData.AggregationWindowData;
-import io.opencensus.stats.ViewData.AggregationWindowData.CumulativeData;
-import io.opencensus.stats.ViewData.AggregationWindowData.IntervalData;
+import io.opencensus.stats.StatsComponent;
+import io.opencensus.stats.StatsRecorder;
 import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
@@ -116,13 +120,15 @@ public class ViewManagerImplTest {
 
   private final TestClock clock = TestClock.create();
 
-  private final StatsComponentImplBase statsComponent =
-      new StatsComponentImplBase(new SimpleEventQueue(), clock);
   private final TagsComponent tagsComponent = new TagsComponentImplBase();
+  private final StatsManager statsManager = new StatsManager(new SimpleEventQueue(), clock);
+  private final StatsComponent statsComponent = new StatsComponentImplBase(statsManager);
+  private final SpiStatsComponent spiStatsComponent = new SpiStatsComponentImplBase(statsManager);
+
+  private final ViewManager viewManager = spiStatsComponent.getExportComponent().getViewManager();
+  private final StatsRecorder statsRecorder = statsComponent.getStatsRecorder();
 
   private final Tagger tagger = tagsComponent.getTagger();
-  private final ViewManagerImpl viewManager = statsComponent.getViewManager();
-  private final StatsRecorderImpl statsRecorder = statsComponent.getStatsRecorder();
 
   private static View createCumulativeView() {
     return createCumulativeView(VIEW_NAME, MEASURE_DOUBLE, DISTRIBUTION, Arrays.asList(KEY));
@@ -879,7 +885,7 @@ public class ViewManagerImplTest {
   @Test
   @SuppressWarnings("deprecation")
   public void registerRecordAndGetView_StatsDisabled() {
-    statsComponent.setState(StatsCollectionState.DISABLED);
+    spiStatsComponent.setState(StatsCollectionState.DISABLED);
     View view = createCumulativeView(VIEW_NAME, MEASURE_DOUBLE, MEAN, Arrays.asList(KEY));
     viewManager.registerView(view);
     statsRecorder
@@ -892,8 +898,8 @@ public class ViewManagerImplTest {
   @Test
   @SuppressWarnings("deprecation")
   public void registerRecordAndGetView_StatsReenabled() {
-    statsComponent.setState(StatsCollectionState.DISABLED);
-    statsComponent.setState(StatsCollectionState.ENABLED);
+    spiStatsComponent.setState(StatsCollectionState.DISABLED);
+    spiStatsComponent.setState(StatsCollectionState.ENABLED);
     View view = createCumulativeView(VIEW_NAME, MEASURE_DOUBLE, MEAN, Arrays.asList(KEY));
     viewManager.registerView(view);
     statsRecorder
@@ -910,11 +916,11 @@ public class ViewManagerImplTest {
   @Test
   @SuppressWarnings("deprecation")
   public void registerViewWithStatsDisabled_RecordAndGetViewWithStatsEnabled() {
-    statsComponent.setState(StatsCollectionState.DISABLED);
+    spiStatsComponent.setState(StatsCollectionState.DISABLED);
     View view = createCumulativeView(VIEW_NAME, MEASURE_DOUBLE, MEAN, Arrays.asList(KEY));
     viewManager.registerView(view); // view will still be registered.
 
-    statsComponent.setState(StatsCollectionState.ENABLED);
+    spiStatsComponent.setState(StatsCollectionState.ENABLED);
     statsRecorder
         .newMeasureMap()
         .put(MEASURE_DOUBLE, 1.1)
@@ -929,7 +935,7 @@ public class ViewManagerImplTest {
   @Test
   @SuppressWarnings("deprecation")
   public void registerDifferentViewWithSameNameWithStatsDisabled() {
-    statsComponent.setState(StatsCollectionState.DISABLED);
+    spiStatsComponent.setState(StatsCollectionState.DISABLED);
     View view1 =
         View.create(
             VIEW_NAME,
@@ -987,12 +993,12 @@ public class ViewManagerImplTest {
 
     Timestamp timestamp2 = Timestamp.create(2, 0);
     clock.setTime(timestamp2);
-    statsComponent.setState(StatsCollectionState.DISABLED); // This will clear stats.
+    spiStatsComponent.setState(StatsCollectionState.DISABLED); // This will clear stats.
     assertThat(viewManager.getView(view.getName())).isEqualTo(createEmptyViewData(view));
 
     Timestamp timestamp3 = Timestamp.create(3, 0);
     clock.setTime(timestamp3);
-    statsComponent.setState(StatsCollectionState.ENABLED);
+    spiStatsComponent.setState(StatsCollectionState.ENABLED);
 
     Timestamp timestamp4 = Timestamp.create(4, 0);
     clock.setTime(timestamp4);

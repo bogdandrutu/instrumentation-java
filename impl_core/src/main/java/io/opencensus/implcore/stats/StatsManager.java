@@ -23,31 +23,51 @@ import io.opencensus.implcore.internal.CurrentState;
 import io.opencensus.implcore.internal.CurrentState.State;
 import io.opencensus.implcore.internal.EventQueue;
 import io.opencensus.metrics.export.Metric;
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewData;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.ViewData;
 import io.opencensus.tags.TagContext;
 import java.util.Collection;
 import java.util.Set;
 import javax.annotation.Nullable;
 
 /** Object that stores all views and stats. */
-final class StatsManager {
+public final class StatsManager {
+  private static final State DEFAULT_STATE = State.ENABLED;
+
+  private static volatile StatsManager instance;
 
   private final EventQueue queue;
 
   // clock used throughout the stats implementation
   private final Clock clock;
 
-  private final CurrentState state;
+  private final CurrentState currentState;
   private final MeasureToViewMap measureToViewMap = new MeasureToViewMap();
 
-  StatsManager(EventQueue queue, Clock clock, CurrentState state) {
+  /**
+   * Returns a singleton of this class.
+   *
+   * @param queue the queue implementation.
+   * @param clock the clock to use when recording stats.
+   * @return a singleton of this class.
+   */
+  public static synchronized StatsManager getOrCreateInstance(EventQueue queue, Clock clock) {
+    if (instance == null) {
+      instance = new StatsManager(queue, clock, new CurrentState(DEFAULT_STATE));
+    }
+    return instance;
+  }
+
+  StatsManager(EventQueue queue, Clock clock) {
+    this(queue, clock, new CurrentState(DEFAULT_STATE));
+  }
+
+  StatsManager(EventQueue queue, Clock clock, CurrentState currentState) {
     checkNotNull(queue, "EventQueue");
     checkNotNull(clock, "Clock");
-    checkNotNull(state, "state");
     this.queue = queue;
     this.clock = clock;
-    this.state = state;
+    this.currentState = currentState;
   }
 
   void registerView(View view) {
@@ -56,7 +76,7 @@ final class StatsManager {
 
   @Nullable
   ViewData getView(View.Name viewName) {
-    return measureToViewMap.getView(viewName, clock, state.getInternal());
+    return measureToViewMap.getView(viewName, clock, currentState.getInternal());
   }
 
   Set<View> getExportedViews() {
@@ -64,15 +84,16 @@ final class StatsManager {
   }
 
   void record(TagContext tags, MeasureMapInternal measurementValues) {
-    // TODO(songya): consider exposing No-op MeasureMap and use it when stats state is DISABLED, so
+    // TODO(songya): consider exposing No-op MeasureMap and use it when stats currentState is
+    // DISABLED, so
     // that we don't need to create actual MeasureMapImpl.
-    if (state.getInternal() == State.ENABLED) {
+    if (currentState.getInternal() == State.ENABLED) {
       queue.enqueue(new StatsEvent(this, tags, measurementValues));
     }
   }
 
   Collection<Metric> getMetrics() {
-    return measureToViewMap.getMetrics(clock, state.getInternal());
+    return measureToViewMap.getMetrics(clock, currentState.getInternal());
   }
 
   void clearStats() {
@@ -81,6 +102,10 @@ final class StatsManager {
 
   void resumeStatsCollection() {
     measureToViewMap.resumeStatsCollection(clock.now());
+  }
+
+  CurrentState getCurrentState() {
+    return currentState;
   }
 
   // An EventQueue entry that records the stats from one call to StatsManager.record(...).

@@ -19,8 +19,8 @@ package io.opencensus.implcore.stats;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opencensus.implcore.internal.SimpleEventQueue;
-import io.opencensus.stats.StatsCollectionState;
-import io.opencensus.stats.StatsComponent;
+import io.opencensus.spi.stats.SpiStatsComponent;
+import io.opencensus.spi.stats.StatsCollectionState;
 import io.opencensus.testing.common.TestClock;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,14 +28,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link StatsComponentImplBase}. */
+/** Tests for {@link SpiStatsComponentImplBase}. */
 @RunWith(JUnit4.class)
-public final class StatsComponentImplBaseTest {
+public final class SpiStatsComponentImplBaseTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
-  private final StatsComponent statsComponent =
-      new StatsComponentImplBase(new SimpleEventQueue(), TestClock.create());
+  private final SpiStatsComponent statsComponent =
+      new SpiStatsComponentImplBase(new StatsManager(new SimpleEventQueue(), TestClock.create()));
 
   @Test
   public void defaultState() {

@@ -19,12 +19,12 @@ package io.opencensus.contrib.grpc.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opencensus.common.Duration;
-import io.opencensus.stats.Aggregation.Count;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.Aggregation.Mean;
-import io.opencensus.stats.BucketBoundaries;
-import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.View.AggregationWindow.Interval;
+import io.opencensus.spi.stats.export.Aggregation.Count;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.Aggregation.Mean;
+import io.opencensus.spi.stats.export.BucketBoundaries;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Cumulative;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Interval;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

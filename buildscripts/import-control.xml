@@ -54,6 +54,14 @@ General guidelines on imports:
     <allow pkg="io.opencensus.stats"/>
     <allow pkg="io.opencensus.tags"/>
   </subpackage>
+  <subpackage name="spi">
+    <allow pkg="io.opencensus.common"/>
+    <allow pkg="io.opencensus.internal"/>
+    <allow pkg="io.opencensus.spi"/>
+    <allow pkg="io.opencensus.stats"/>
+    <allow pkg="io.opencensus.tags"/>
+    <allow pkg="io.opencensus.trace"/>
+  </subpackage>
   <subpackage name="trace">
     <allow pkg="io.opencensus.common"/>
     <allow pkg="io.opencensus.internal"/>
@@ -86,11 +94,13 @@ General guidelines on imports:
     </subpackage>
     <subpackage name="exemplar.util">
       <allow pkg="io.opencensus.stats"/>
+      <allow pkg="io.opencensus.spi.stats"/>
       <allow pkg="io.opencensus.trace"/>
     </subpackage>
     <subpackage name="grpc.metrics">
       <allow pkg="io.opencensus.contrib.grpc.metrics"/>
       <allow pkg="io.opencensus.stats"/>
+      <allow pkg="io.opencensus.spi.stats"/>
       <allow pkg="io.opencensus.tags"/>
     </subpackage>
     <subpackage name="http.jetty.client">
@@ -104,6 +114,7 @@ General guidelines on imports:
       <allow pkg="io.opencensus.contrib.http"/>
       <allow pkg="io.opencensus.contrib.http.util"/>
       <allow pkg="io.opencensus.stats"/>
+      <allow pkg="io.opencensus.spi.stats"/>
       <allow pkg="io.opencensus.tags"/>
       <allow pkg="io.opencensus.trace"/>
       <allow pkg="io.opencensus.trace.propagation"/>
@@ -149,6 +160,7 @@ General guidelines on imports:
       <allow pkg="io.opencensus.contrib.grpc.metrics"/>
       <allow pkg="io.opencensus.contrib.zpages"/>
       <allow pkg="io.opencensus.stats"/>
+      <allow pkg="io.opencensus.spi.stats"/>
       <allow pkg="io.opencensus.tags"/>
       <allow pkg="io.opencensus.trace"/>
     </subpackage>
@@ -221,6 +233,7 @@ General guidelines on imports:
     <allow pkg="io.opencensus.implcore"/>
     <allow pkg="io.opencensus.metrics"/>
     <allow pkg="io.opencensus.stats"/>
+    <allow pkg="io.opencensus.spi.stats"/>
     <allow pkg="io.opencensus.tags"/>
     <allow pkg="io.opencensus.trace"/>
   </subpackage>
@@ -231,6 +244,7 @@ General guidelines on imports:
     <allow pkg="io.opencensus.implcore"/>
     <allow pkg="io.opencensus.metrics"/>
     <allow pkg="io.opencensus.stats"/>
+    <allow pkg="io.opencensus.spi.stats"/>
     <allow pkg="io.opencensus.tags"/>
     <allow pkg="io.opencensus.trace"/>
   </subpackage>
@@ -240,6 +254,7 @@ General guidelines on imports:
     <allow pkg="io.opencensus.impllite"/>
     <allow pkg="io.opencensus.metrics"/>
     <allow pkg="io.opencensus.stats"/>
+    <allow pkg="io.opencensus.spi.stats"/>
     <allow pkg="io.opencensus.tags"/>
     <allow pkg="io.opencensus.trace"/>
   </subpackage>

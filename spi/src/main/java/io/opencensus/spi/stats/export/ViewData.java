@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import com.google.auto.value.AutoValue;
 import io.opencensus.common.Duration;
 import io.opencensus.common.Function;
 import io.opencensus.common.Functions;
 import io.opencensus.common.Timestamp;
-import io.opencensus.stats.Aggregation.Count;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.Aggregation.LastValue;
-import io.opencensus.stats.Aggregation.Sum;
-import io.opencensus.stats.AggregationData.CountData;
-import io.opencensus.stats.AggregationData.DistributionData;
-import io.opencensus.stats.AggregationData.LastValueDataDouble;
-import io.opencensus.stats.AggregationData.LastValueDataLong;
-import io.opencensus.stats.AggregationData.SumDataDouble;
-import io.opencensus.stats.AggregationData.SumDataLong;
+import io.opencensus.spi.stats.export.Aggregation.Count;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.Aggregation.LastValue;
+import io.opencensus.spi.stats.export.Aggregation.Sum;
+import io.opencensus.spi.stats.export.AggregationData.CountData;
+import io.opencensus.spi.stats.export.AggregationData.DistributionData;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.LastValueDataLong;
+import io.opencensus.spi.stats.export.AggregationData.SumDataDouble;
+import io.opencensus.spi.stats.export.AggregationData.SumDataLong;
+import io.opencensus.stats.Measure;
 import io.opencensus.stats.Measure.MeasureDouble;
 import io.opencensus.stats.Measure.MeasureLong;
 import io.opencensus.tags.TagValue;

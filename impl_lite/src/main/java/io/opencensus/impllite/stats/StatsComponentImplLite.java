@@ -19,6 +19,7 @@ package io.opencensus.impllite.stats;
 import io.opencensus.implcore.common.MillisClock;
 import io.opencensus.implcore.internal.SimpleEventQueue;
 import io.opencensus.implcore.stats.StatsComponentImplBase;
+import io.opencensus.implcore.stats.StatsManager;
 import io.opencensus.stats.StatsComponent;
 
 /** Android-compatible implementation of {@link StatsComponent}. */
@@ -26,6 +27,6 @@ public final class StatsComponentImplLite extends StatsComponentImplBase {
 
   public StatsComponentImplLite() {
     // TODO(sebright): Use a more efficient queue implementation.
-    super(new SimpleEventQueue(), MillisClock.getInstance());
+    super(StatsManager.getOrCreateInstance(new SimpleEventQueue(), MillisClock.getInstance()));
   }
 }

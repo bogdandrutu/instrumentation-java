@@ -19,9 +19,9 @@ package io.opencensus.contrib.zpages;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.sun.net.httpserver.HttpServer;
+import io.opencensus.spi.stats.SpiStats;
+import io.opencensus.spi.stats.export.View;
 import io.opencensus.stats.Measure;
-import io.opencensus.stats.Stats;
-import io.opencensus.stats.View;
 import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -74,9 +74,9 @@ public final class ZPageHandlers {
   private static final ZPageHandler traceConfigzZPageHandler =
       TraceConfigzZPageHandler.create(Tracing.getTraceConfig());
   private static final ZPageHandler rpczZpageHandler =
-      RpczZPageHandler.create(Stats.getViewManager());
+      RpczZPageHandler.create(SpiStats.getViewManager());
   private static final ZPageHandler statszZPageHandler =
-      StatszZPageHandler.create(Stats.getViewManager());
+      StatszZPageHandler.create(SpiStats.getViewManager());
 
   private static final Object monitor = new Object();
 

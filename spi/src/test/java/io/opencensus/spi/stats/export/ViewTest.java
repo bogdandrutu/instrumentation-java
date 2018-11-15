@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opencensus.common.Duration;
-import io.opencensus.stats.Aggregation.Mean;
-import io.opencensus.stats.View.AggregationWindow.Cumulative;
-import io.opencensus.stats.View.AggregationWindow.Interval;
+import io.opencensus.spi.stats.export.Aggregation.Mean;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Cumulative;
+import io.opencensus.spi.stats.export.View.AggregationWindow.Interval;
+import io.opencensus.stats.Measure;
 import io.opencensus.tags.TagKey;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,9 +34,20 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link View}. */
+/** Tests for {@link io.opencensus.spi.stats.export.View}. */
 @RunWith(JUnit4.class)
 public final class ViewTest {
+  private static final View.Name NAME = View.Name.create("test-view-name");
+  private static final String DESCRIPTION = "test-view-name description";
+  private static final Measure MEASURE =
+      Measure.MeasureDouble.create("measure", "measure description", "1");
+  private static final TagKey FOO = TagKey.create("foo");
+  private static final TagKey BAR = TagKey.create("bar");
+  private static final List<TagKey> KEYS = Collections.unmodifiableList(Arrays.asList(FOO, BAR));
+  private static final Mean MEAN = Mean.create();
+  private static final Duration MINUTE = Duration.create(60, 0);
+  private static final Duration TWO_MINUTES = Duration.create(120, 0);
+  private static final Duration NEG_TEN_SECONDS = Duration.create(-10, 0);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -149,16 +161,4 @@ public final class ViewTest {
         .addEqualityGroup(View.Name.create("view-2"))
         .testEquals();
   }
-
-  private static final View.Name NAME = View.Name.create("test-view-name");
-  private static final String DESCRIPTION = "test-view-name description";
-  private static final Measure MEASURE =
-      Measure.MeasureDouble.create("measure", "measure description", "1");
-  private static final TagKey FOO = TagKey.create("foo");
-  private static final TagKey BAR = TagKey.create("bar");
-  private static final List<TagKey> KEYS = Collections.unmodifiableList(Arrays.asList(FOO, BAR));
-  private static final Mean MEAN = Mean.create();
-  private static final Duration MINUTE = Duration.create(60, 0);
-  private static final Duration TWO_MINUTES = Duration.create(120, 0);
-  private static final Duration NEG_TEN_SECONDS = Duration.create(-10, 0);
 }

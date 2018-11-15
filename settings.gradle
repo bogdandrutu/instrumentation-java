@@ -1,6 +1,7 @@
 rootProject.name = "opencensus-java"
 
 include ":opencensus-api"
+include ":opencensus-spi"
 include ":opencensus-impl-core"
 include ":opencensus-impl-lite"
 include ":opencensus-impl"
@@ -30,6 +31,7 @@ include ":opencensus-contrib-spring"
 include ":opencensus-contrib-spring-sleuth-v1x"
 
 project(':opencensus-api').projectDir = "$rootDir/api" as File
+project(':opencensus-spi').projectDir = "$rootDir/spi" as File
 project(':opencensus-impl-core').projectDir = "$rootDir/impl_core" as File
 project(':opencensus-impl-lite').projectDir = "$rootDir/impl_lite" as File
 project(':opencensus-impl').projectDir = "$rootDir/impl" as File

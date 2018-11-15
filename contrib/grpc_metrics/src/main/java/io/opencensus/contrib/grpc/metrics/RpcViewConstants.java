@@ -60,11 +60,11 @@ import static io.opencensus.contrib.grpc.metrics.RpcMeasureConstants.RPC_STATUS;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.common.Duration;
-import io.opencensus.stats.Aggregation;
-import io.opencensus.stats.Aggregation.Count;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.BucketBoundaries;
-import io.opencensus.stats.View;
+import io.opencensus.spi.stats.export.Aggregation;
+import io.opencensus.spi.stats.export.Aggregation.Count;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.BucketBoundaries;
+import io.opencensus.spi.stats.export.View;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

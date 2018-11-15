@@ -30,11 +30,11 @@ import static io.opencensus.contrib.http.util.HttpMeasureConstants.HTTP_SERVER_S
 import static io.opencensus.contrib.http.util.HttpMeasureConstants.HTTP_SERVER_STATUS;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.stats.Aggregation;
-import io.opencensus.stats.Aggregation.Count;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.BucketBoundaries;
-import io.opencensus.stats.View;
+import io.opencensus.spi.stats.export.Aggregation;
+import io.opencensus.spi.stats.export.Aggregation.Count;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.BucketBoundaries;
+import io.opencensus.spi.stats.export.View;
 import java.util.Arrays;
 import java.util.Collections;
 

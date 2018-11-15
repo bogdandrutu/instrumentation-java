@@ -42,52 +42,6 @@ public final class Stats {
     return statsComponent.getStatsRecorder();
   }
 
-  /**
-   * Returns the default {@link ViewManager}.
-   *
-   * @since 0.8
-   */
-  public static ViewManager getViewManager() {
-    return statsComponent.getViewManager();
-  }
-
-  /**
-   * Returns the current {@code StatsCollectionState}.
-   *
-   * <p>When no implementation is available, {@code getState} always returns {@link
-   * StatsCollectionState#DISABLED}.
-   *
-   * <p>Once {@link #getState()} is called, subsequent calls to {@link
-   * #setState(StatsCollectionState)} will throw an {@code IllegalStateException}.
-   *
-   * @return the current {@code StatsCollectionState}.
-   * @since 0.8
-   */
-  public static StatsCollectionState getState() {
-    return statsComponent.getState();
-  }
-
-  /**
-   * Sets the current {@code StatsCollectionState}.
-   *
-   * <p>When no implementation is available, {@code setState} does not change the state.
-   *
-   * <p>If state is set to {@link StatsCollectionState#DISABLED}, all stats that are previously
-   * recorded will be cleared.
-   *
-   * @param state the new {@code StatsCollectionState}.
-   * @throws IllegalStateException if {@link #getState()} was previously called.
-   * @deprecated This method is deprecated because other libraries could cache the result of {@link
-   *     #getState()}, use a stale value, and behave incorrectly. It is only safe to call early in
-   *     initialization. This method throws {@link IllegalStateException} after {@code getState()}
-   *     has been called, in order to limit changes to the result of {@code getState()}.
-   * @since 0.8
-   */
-  @Deprecated
-  public static void setState(StatsCollectionState state) {
-    statsComponent.setState(state);
-  }
-
   // Any provider that may be used for StatsComponent can be added here.
   @DefaultVisibilityForTesting
   static StatsComponent loadStatsComponent(@Nullable ClassLoader classLoader) {
@@ -119,7 +73,7 @@ public final class Stats {
               + "default implementation for StatsComponent.",
           e);
     }
-    return NoopStats.newNoopStatsComponent();
+    return StatsComponent.newNoopStatsComponent();
   }
 
   private Stats() {}

@@ -16,7 +16,6 @@
 
 package io.opencensus.contrib.exemplar.util;
 
-import io.opencensus.stats.AggregationData.DistributionData.Exemplar;
 import io.opencensus.stats.MeasureMap;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
@@ -24,14 +23,16 @@ import io.opencensus.trace.TraceId;
 import javax.annotation.Nullable;
 
 /**
- * Utils for recording {@link Exemplar}s for OpenCensus stats.
+ * Utils for recording {@link io.opencensus.metrics.export.Distribution.Exemplar}s for OpenCensus
+ * stats.
  *
  * @since 0.16
  */
 public final class ExemplarUtils {
 
   /**
-   * Key for {@link TraceId} in the contextual information of an {@link Exemplar}.
+   * Key for {@link TraceId} in the contextual information of an {@link
+   * io.opencensus.metrics.export.Distribution.Exemplar}.
    *
    * <p>For the {@code TraceId} value of this key, it is suggested to encode it in hex (base 16)
    * lower case.
@@ -41,7 +42,8 @@ public final class ExemplarUtils {
   public static final String ATTACHMENT_KEY_TRACE_ID = "TraceId";
 
   /**
-   * Key for {@link SpanId} in the contextual information of an {@link Exemplar}.
+   * Key for {@link SpanId} in the contextual information of an {@link
+   * io.opencensus.metrics.export.Distribution.Exemplar}.
    *
    * <p>For the {@code SpanId} value of this key, it is suggested to encode it in hex (base 16)
    * lower case.

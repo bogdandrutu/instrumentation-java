@@ -20,9 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewData;
-import io.opencensus.stats.ViewManager;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.ViewData;
+import io.opencensus.spi.stats.export.ViewManager;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;

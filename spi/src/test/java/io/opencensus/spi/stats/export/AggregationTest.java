@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opencensus.common.Functions;
-import io.opencensus.stats.Aggregation.Count;
-import io.opencensus.stats.Aggregation.Distribution;
-import io.opencensus.stats.Aggregation.LastValue;
-import io.opencensus.stats.Aggregation.Mean;
-import io.opencensus.stats.Aggregation.Sum;
+import io.opencensus.spi.stats.export.Aggregation.Count;
+import io.opencensus.spi.stats.export.Aggregation.Distribution;
+import io.opencensus.spi.stats.export.Aggregation.LastValue;
+import io.opencensus.spi.stats.export.Aggregation.Mean;
+import io.opencensus.spi.stats.export.Aggregation.Sum;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +34,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link io.opencensus.stats.Aggregation}. */
+/** Unit tests for {@link io.opencensus.spi.stats.export.Aggregation}. */
 @RunWith(JUnit4.class)
 public class AggregationTest {
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.stats;
+package io.opencensus.spi.stats;
 
 /**
  * State of the {@link StatsComponent}.

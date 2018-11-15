@@ -18,9 +18,9 @@ package io.opencensus.contrib.http.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import io.opencensus.stats.Stats;
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewManager;
+import io.opencensus.spi.stats.SpiStats;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.ViewManager;
 
 /**
  * A helper class that allows users to register HTTP views easily.
@@ -55,7 +55,7 @@ public final class HttpViews {
    * @since 0.13
    */
   public static final void registerAllClientViews() {
-    registerAllClientViews(Stats.getViewManager());
+    registerAllClientViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting
@@ -73,7 +73,7 @@ public final class HttpViews {
    * @since 0.13
    */
   public static final void registerAllServerViews() {
-    registerAllServerViews(Stats.getViewManager());
+    registerAllServerViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting
@@ -92,7 +92,7 @@ public final class HttpViews {
    * @since 0.13
    */
   public static final void registerAllViews() {
-    registerAllViews(Stats.getViewManager());
+    registerAllViews(SpiStats.getViewManager());
   }
 
   @VisibleForTesting

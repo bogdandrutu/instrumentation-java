@@ -18,8 +18,8 @@ package io.opencensus.contrib.http.util;
 
 import static org.mockito.Mockito.verify;
 
-import io.opencensus.stats.View;
-import io.opencensus.stats.ViewManager;
+import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.stats.export.ViewManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
