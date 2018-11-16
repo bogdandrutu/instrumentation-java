@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkState;
 import com.sun.net.httpserver.HttpServer;
 import io.opencensus.spi.stats.SpiStats;
 import io.opencensus.spi.stats.export.View;
+import io.opencensus.spi.trace.SpiTracing;
 import io.opencensus.stats.Measure;
-import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
@@ -69,10 +69,10 @@ public final class ZPageHandlers {
   private static final Logger logger = Logger.getLogger(ZPageHandler.class.getName());
   private static final ZPageHandler tracezZPageHandler =
       TracezZPageHandler.create(
-          Tracing.getExportComponent().getRunningSpanStore(),
-          Tracing.getExportComponent().getSampledSpanStore());
+          SpiTracing.getExportComponent().getRunningSpanStore(),
+          SpiTracing.getExportComponent().getSampledSpanStore());
   private static final ZPageHandler traceConfigzZPageHandler =
-      TraceConfigzZPageHandler.create(Tracing.getTraceConfig());
+      TraceConfigzZPageHandler.create(SpiTracing.getTraceConfig());
   private static final ZPageHandler rpczZpageHandler =
       RpczZPageHandler.create(SpiStats.getViewManager());
   private static final ZPageHandler statszZPageHandler =

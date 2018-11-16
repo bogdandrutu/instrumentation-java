@@ -18,6 +18,7 @@ sourceSets {
 
 dependencies {
     compile project(':opencensus-api'),
+            project(':opencensus-spi'),
             libraries.guava
 
     compile(libraries.jaeger_reporter) {

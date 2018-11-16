@@ -19,9 +19,9 @@ package io.opencensus.exporter.trace.instana;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanExporter;
-import io.opencensus.trace.export.SpanExporter.Handler;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter.Handler;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.annotation.Nullable;
@@ -66,7 +66,7 @@ public final class InstanaTraceExporter {
       checkState(handler == null, "Instana exporter is already registered.");
       Handler newHandler = new InstanaExporterHandler(new URL(agentEndpoint));
       handler = newHandler;
-      register(Tracing.getExportComponent().getSpanExporter(), newHandler);
+      register(SpiTracing.getExportComponent().getSpanExporter(), newHandler);
     }
   }
 
@@ -89,7 +89,7 @@ public final class InstanaTraceExporter {
   public static void unregister() {
     synchronized (monitor) {
       checkState(handler != null, "Instana exporter is not registered.");
-      unregister(Tracing.getExportComponent().getSpanExporter());
+      unregister(SpiTracing.getExportComponent().getSpanExporter());
       handler = null;
     }
   }

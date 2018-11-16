@@ -19,9 +19,9 @@ package io.opencensus.exporter.trace.ocagent;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanExporter;
-import io.opencensus.trace.export.SpanExporter.Handler;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter.Handler;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
@@ -100,7 +100,7 @@ public final class OcAgentTraceExporter {
   private static void registerInternal(Handler newHandler) {
     synchronized (monitor) {
       handler = newHandler;
-      register(Tracing.getExportComponent().getSpanExporter(), newHandler);
+      register(SpiTracing.getExportComponent().getSpanExporter(), newHandler);
     }
   }
 
@@ -110,7 +110,7 @@ public final class OcAgentTraceExporter {
    * @since 0.18
    */
   public static void unregister() {
-    unregister(Tracing.getExportComponent().getSpanExporter());
+    unregister(SpiTracing.getExportComponent().getSpanExporter());
   }
 
   /**

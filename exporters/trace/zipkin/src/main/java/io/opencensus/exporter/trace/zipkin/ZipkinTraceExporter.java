@@ -19,9 +19,9 @@ package io.opencensus.exporter.trace.zipkin;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanExporter;
-import io.opencensus.trace.export.SpanExporter.Handler;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter.Handler;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import zipkin2.Span;
@@ -83,7 +83,7 @@ public final class ZipkinTraceExporter {
       checkState(handler == null, "Zipkin exporter is already registered.");
       Handler newHandler = new ZipkinExporterHandler(encoder, sender, serviceName);
       handler = newHandler;
-      register(Tracing.getExportComponent().getSpanExporter(), newHandler);
+      register(SpiTracing.getExportComponent().getSpanExporter(), newHandler);
     }
   }
 
@@ -106,7 +106,7 @@ public final class ZipkinTraceExporter {
   public static void unregister() {
     synchronized (monitor) {
       checkState(handler != null, "Zipkin exporter is not registered.");
-      unregister(Tracing.getExportComponent().getSpanExporter());
+      unregister(SpiTracing.getExportComponent().getSpanExporter());
       handler = null;
     }
   }

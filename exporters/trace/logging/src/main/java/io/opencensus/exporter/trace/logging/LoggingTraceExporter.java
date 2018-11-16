@@ -17,10 +17,10 @@
 package io.opencensus.exporter.trace.logging;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanExporter;
-import io.opencensus.trace.export.SpanExporter.Handler;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter.Handler;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +54,7 @@ public final class LoggingTraceExporter {
    * @since 0.12
    */
   public static void register() {
-    register(Tracing.getExportComponent().getSpanExporter());
+    register(SpiTracing.getExportComponent().getSpanExporter());
   }
 
   /**
@@ -73,7 +73,7 @@ public final class LoggingTraceExporter {
    * @since 0.12
    */
   public static void unregister() {
-    unregister(Tracing.getExportComponent().getSpanExporter());
+    unregister(SpiTracing.getExportComponent().getSpanExporter());
   }
 
   /**

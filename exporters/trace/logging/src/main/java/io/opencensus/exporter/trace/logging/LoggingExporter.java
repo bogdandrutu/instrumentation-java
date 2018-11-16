@@ -17,7 +17,7 @@
 package io.opencensus.exporter.trace.logging;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**

@@ -20,11 +20,11 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opencensus.implcore.trace.RecordEventsSpanImpl.StartEndHandler;
 import io.opencensus.implcore.trace.internal.RandomHandler.SecureRandomHandler;
+import io.opencensus.spi.trace.config.TraceConfig;
 import io.opencensus.testing.common.TestClock;
 import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.SpanBuilder;
 import io.opencensus.trace.SpanContext;
-import io.opencensus.trace.config.TraceConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

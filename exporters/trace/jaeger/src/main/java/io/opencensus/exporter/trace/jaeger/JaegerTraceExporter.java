@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.uber.jaeger.senders.HttpSender;
 import com.uber.jaeger.thriftjava.Process;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanExporter;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanExporter;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -64,7 +64,7 @@ public final class JaegerTraceExporter {
       checkState(handler == null, "Jaeger exporter is already registered.");
       final SpanExporter.Handler newHandler = newHandler(thriftEndpoint, serviceName);
       JaegerTraceExporter.handler = newHandler;
-      register(Tracing.getExportComponent().getSpanExporter(), newHandler);
+      register(SpiTracing.getExportComponent().getSpanExporter(), newHandler);
     }
   }
 
@@ -82,7 +82,7 @@ public final class JaegerTraceExporter {
       checkState(handler == null, "Jaeger exporter is already registered.");
       final SpanExporter.Handler newHandler = newHandlerWithSender(httpSender, serviceName);
       JaegerTraceExporter.handler = newHandler;
-      register(Tracing.getExportComponent().getSpanExporter(), newHandler);
+      register(SpiTracing.getExportComponent().getSpanExporter(), newHandler);
     }
   }
 
@@ -118,7 +118,7 @@ public final class JaegerTraceExporter {
   public static void unregister() {
     synchronized (monitor) {
       checkState(handler != null, "Jaeger exporter is not registered.");
-      unregister(Tracing.getExportComponent().getSpanExporter());
+      unregister(SpiTracing.getExportComponent().getSpanExporter());
       handler = null;
     }
   }

@@ -17,8 +17,8 @@
 package io.opencensus.exporter.trace.zipkin;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.export.SpanExporter;
-import io.opencensus.trace.export.SpanExporter.Handler;
+import io.opencensus.spi.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter.Handler;
 import zipkin2.Span;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;

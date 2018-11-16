@@ -19,8 +19,8 @@ package io.opencensus.contrib.zpages;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.google.common.base.Charsets;
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.config.TraceParams;
+import io.opencensus.spi.trace.config.TraceConfig;
+import io.opencensus.spi.trace.config.TraceParams;
 import io.opencensus.trace.samplers.Samplers;
 import java.io.BufferedWriter;
 import java.io.OutputStream;

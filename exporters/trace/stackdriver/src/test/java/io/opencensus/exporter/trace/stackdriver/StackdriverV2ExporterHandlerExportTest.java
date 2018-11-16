@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.cloud.trace.v2.stub.TraceServiceStub;
-import io.opencensus.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanData;
 import java.util.Collection;
 import java.util.Collections;
 import org.junit.Before;

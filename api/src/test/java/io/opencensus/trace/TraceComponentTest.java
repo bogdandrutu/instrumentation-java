@@ -19,8 +19,6 @@ package io.opencensus.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opencensus.internal.ZeroTimeClock;
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.export.ExportComponent;
 import io.opencensus.trace.propagation.PropagationComponent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,17 +41,5 @@ public class TraceComponentTest {
   @Test
   public void defaultClock() {
     assertThat(TraceComponent.newNoopTraceComponent().getClock()).isInstanceOf(ZeroTimeClock.class);
-  }
-
-  @Test
-  public void defaultTraceExporter() {
-    assertThat(TraceComponent.newNoopTraceComponent().getExportComponent())
-        .isInstanceOf(ExportComponent.newNoopExportComponent().getClass());
-  }
-
-  @Test
-  public void defaultTraceConfig() {
-    assertThat(TraceComponent.newNoopTraceComponent().getTraceConfig())
-        .isSameAs(TraceConfig.getNoopTraceConfig());
   }
 }

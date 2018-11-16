@@ -18,11 +18,11 @@ package io.opencensus.implcore.trace;
 
 import io.opencensus.common.Clock;
 import io.opencensus.implcore.trace.internal.RandomHandler;
+import io.opencensus.spi.trace.config.TraceConfig;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanBuilder;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracer;
-import io.opencensus.trace.config.TraceConfig;
 import javax.annotation.Nullable;
 
 /** Implementation of the {@link Tracer}. */

@@ -17,26 +17,18 @@
 package io.opencensus.impllite.trace;
 
 import io.opencensus.common.Clock;
-import io.opencensus.implcore.common.MillisClock;
-import io.opencensus.implcore.internal.SimpleEventQueue;
 import io.opencensus.implcore.trace.TraceComponentImplBase;
-import io.opencensus.implcore.trace.internal.RandomHandler.SecureRandomHandler;
 import io.opencensus.trace.TraceComponent;
 import io.opencensus.trace.Tracer;
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.export.ExportComponent;
 import io.opencensus.trace.propagation.PropagationComponent;
 
 /** Android-compatible implementation of the {@link TraceComponent}. */
 public final class TraceComponentImplLite extends TraceComponent {
-  private final TraceComponentImplBase traceComponentImplBase;
+  private final TraceComponentImplBase traceComponentImplBase =
+      TraceComponentImplBaseInstance.getInstance();
 
   /** Public constructor to be used with reflection loading. */
-  public TraceComponentImplLite() {
-    traceComponentImplBase =
-        new TraceComponentImplBase(
-            MillisClock.getInstance(), new SecureRandomHandler(), new SimpleEventQueue());
-  }
+  public TraceComponentImplLite() {}
 
   @Override
   public Tracer getTracer() {
@@ -51,15 +43,5 @@ public final class TraceComponentImplLite extends TraceComponent {
   @Override
   public Clock getClock() {
     return traceComponentImplBase.getClock();
-  }
-
-  @Override
-  public ExportComponent getExportComponent() {
-    return traceComponentImplBase.getExportComponent();
-  }
-
-  @Override
-  public TraceConfig getTraceConfig() {
-    return traceComponentImplBase.getTraceConfig();
   }
 }

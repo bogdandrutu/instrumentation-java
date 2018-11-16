@@ -18,8 +18,6 @@ package io.opencensus.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.export.ExportComponent;
 import io.opencensus.trace.propagation.PropagationComponent;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,16 +66,5 @@ public class TracingTest {
   public void defaultBinaryPropagationHandler() {
     assertThat(Tracing.getPropagationComponent())
         .isSameAs(PropagationComponent.getNoopPropagationComponent());
-  }
-
-  @Test
-  public void defaultTraceExporter() {
-    assertThat(Tracing.getExportComponent())
-        .isInstanceOf(ExportComponent.newNoopExportComponent().getClass());
-  }
-
-  @Test
-  public void defaultTraceConfig() {
-    assertThat(Tracing.getTraceConfig()).isSameAs(TraceConfig.getNoopTraceConfig());
   }
 }

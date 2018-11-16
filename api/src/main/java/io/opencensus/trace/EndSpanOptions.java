@@ -58,7 +58,7 @@ public abstract class EndSpanOptions {
    * instead.
    *
    * @return {@code true} if the name of the {@code Span} should be registered to the {@code
-   *     io.opencensus.trace.export.SampledSpanStore}.
+   *     io.opencensus.spi.trace.export.SampledSpanStore}.
    * @since 0.8
    */
   @ExperimentalApi

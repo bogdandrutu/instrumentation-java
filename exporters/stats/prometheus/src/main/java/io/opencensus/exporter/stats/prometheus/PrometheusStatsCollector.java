@@ -22,7 +22,6 @@ import static io.opencensus.exporter.stats.prometheus.PrometheusExportUtils.conv
 import static io.opencensus.exporter.stats.prometheus.PrometheusExportUtils.getType;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.opencensus.common.Scope;
 import io.opencensus.metrics.Metrics;
@@ -30,6 +29,7 @@ import io.opencensus.metrics.export.Metric;
 import io.opencensus.metrics.export.MetricDescriptor;
 import io.opencensus.metrics.export.MetricProducer;
 import io.opencensus.metrics.export.MetricProducerManager;
+import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Sampler;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
@@ -53,6 +53,8 @@ public final class PrometheusStatsCollector extends Collector implements Collect
   private static final Logger logger = Logger.getLogger(PrometheusStatsCollector.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
   private static final Sampler probabilitySampler = Samplers.probabilitySampler(0.0001);
+  public static final EndSpanOptions END_SPAN_OPTIONS =
+      EndSpanOptions.builder().setSampleToLocalSpanStore(true).build();
 
   private final MetricProducerManager metricProducerManager;
 
@@ -134,7 +136,7 @@ public final class PrometheusStatsCollector extends Collector implements Collect
       span.addAnnotation("Finish collecting Prometheus Metric Samples.");
     } finally {
       scope.close();
-      span.end();
+      span.end(END_SPAN_OPTIONS);
     }
     return samples;
   }
@@ -168,7 +170,7 @@ public final class PrometheusStatsCollector extends Collector implements Collect
       span.addAnnotation("Finish describing Prometheus Metrics.");
     } finally {
       scope.close();
-      span.end();
+      span.end(END_SPAN_OPTIONS);
     }
     return samples;
   }
@@ -176,10 +178,6 @@ public final class PrometheusStatsCollector extends Collector implements Collect
   @VisibleForTesting
   PrometheusStatsCollector(MetricProducerManager metricProducerManager) {
     this.metricProducerManager = metricProducerManager;
-    Tracing.getExportComponent()
-        .getSampledSpanStore()
-        .registerSpanNamesForCollection(
-            ImmutableList.of("DescribeMetricsForPrometheus", "ExportStatsToPrometheus"));
   }
 
   private static String exceptionMessage(Throwable e) {

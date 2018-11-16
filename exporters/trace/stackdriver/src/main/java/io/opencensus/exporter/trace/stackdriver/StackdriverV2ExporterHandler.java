@@ -48,6 +48,11 @@ import io.opencensus.contrib.monitoredresource.util.MonitoredResource.GcpGceInst
 import io.opencensus.contrib.monitoredresource.util.MonitoredResource.GcpGkeContainerMonitoredResource;
 import io.opencensus.contrib.monitoredresource.util.MonitoredResourceUtils;
 import io.opencensus.contrib.monitoredresource.util.ResourceType;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanData.TimedEvent;
+import io.opencensus.spi.trace.export.SpanData.TimedEvents;
+import io.opencensus.spi.trace.export.SpanExporter;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.MessageEvent.Type;
 import io.opencensus.trace.Sampler;
@@ -55,10 +60,6 @@ import io.opencensus.trace.Span.Kind;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanData.TimedEvent;
-import io.opencensus.trace.export.SpanData.TimedEvents;
-import io.opencensus.trace.export.SpanExporter;
 import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -155,7 +156,7 @@ final class StackdriverV2ExporterHandler extends SpanExporter.Handler {
     this.traceServiceClient = traceServiceClient;
     projectName = ProjectName.of(this.projectId);
 
-    Tracing.getExportComponent()
+    SpiTracing.getExportComponent()
         .getSampledSpanStore()
         .registerSpanNamesForCollection(Collections.singletonList("ExportStackdriverTraces"));
   }
@@ -268,7 +269,7 @@ final class StackdriverV2ExporterHandler extends SpanExporter.Handler {
 
   // These are the attributes of the Span, where usually we may add more attributes like the agent.
   private static Attributes toAttributesProto(
-      io.opencensus.trace.export.SpanData.Attributes attributes,
+      io.opencensus.spi.trace.export.SpanData.Attributes attributes,
       Map<String, AttributeValue> resourceLabels) {
     Attributes.Builder attributesBuilder =
         toAttributesBuilderProto(
@@ -469,7 +470,7 @@ final class StackdriverV2ExporterHandler extends SpanExporter.Handler {
         .build();
   }
 
-  private static Links toLinksProto(io.opencensus.trace.export.SpanData.Links links) {
+  private static Links toLinksProto(io.opencensus.spi.trace.export.SpanData.Links links) {
     final Links.Builder linksBuilder =
         Links.newBuilder().setDroppedLinksCount(links.getDroppedLinksCount());
     for (io.opencensus.trace.Link link : links.getLinks()) {

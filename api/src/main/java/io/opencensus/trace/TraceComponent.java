@@ -18,13 +18,11 @@ package io.opencensus.trace;
 
 import io.opencensus.common.Clock;
 import io.opencensus.internal.ZeroTimeClock;
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.export.ExportComponent;
 import io.opencensus.trace.propagation.PropagationComponent;
 
 /**
  * Class that holds the implementation instances for {@link Tracer}, {@link PropagationComponent},
- * {@link Clock}, {@link ExportComponent} and {@link TraceConfig}.
+ * {@link Clock}.
  *
  * <p>Unless otherwise noted all methods (on component) results are cacheable.
  *
@@ -59,24 +57,6 @@ public abstract class TraceComponent {
   public abstract Clock getClock();
 
   /**
-   * Returns the {@link ExportComponent} with the provided implementation. If no implementation is
-   * provided then no-op implementations will be used.
-   *
-   * @return the {@link ExportComponent} implementation.
-   * @since 0.5
-   */
-  public abstract ExportComponent getExportComponent();
-
-  /**
-   * Returns the {@link TraceConfig} with the provided implementation. If no implementation is
-   * provided then no-op implementations will be used.
-   *
-   * @return the {@link TraceConfig} implementation.
-   * @since 0.5
-   */
-  public abstract TraceConfig getTraceConfig();
-
-  /**
    * Returns an instance that contains no-op implementations for all the instances.
    *
    * @return an instance that contains no-op implementations for all the instances.
@@ -86,8 +66,6 @@ public abstract class TraceComponent {
   }
 
   private static final class NoopTraceComponent extends TraceComponent {
-    private final ExportComponent noopExportComponent = ExportComponent.newNoopExportComponent();
-
     @Override
     public Tracer getTracer() {
       return Tracer.getNoopTracer();
@@ -101,16 +79,6 @@ public abstract class TraceComponent {
     @Override
     public Clock getClock() {
       return ZeroTimeClock.getInstance();
-    }
-
-    @Override
-    public ExportComponent getExportComponent() {
-      return noopExportComponent;
-    }
-
-    @Override
-    public TraceConfig getTraceConfig() {
-      return TraceConfig.getNoopTraceConfig();
     }
 
     private NoopTraceComponent() {}

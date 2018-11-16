@@ -16,8 +16,8 @@
 
 package io.opencensus.implcore.trace.config;
 
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.config.TraceParams;
+import io.opencensus.spi.trace.config.TraceConfig;
+import io.opencensus.spi.trace.config.TraceParams;
 
 /**
  * Global configuration of the trace service. This allows users to change configs for the default

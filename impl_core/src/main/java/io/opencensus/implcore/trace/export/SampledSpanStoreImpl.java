@@ -17,8 +17,8 @@
 package io.opencensus.implcore.trace.export;
 
 import io.opencensus.implcore.trace.RecordEventsSpanImpl;
-import io.opencensus.trace.export.SampledSpanStore;
-import io.opencensus.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SampledSpanStore;
+import io.opencensus.spi.trace.export.SpanData;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;

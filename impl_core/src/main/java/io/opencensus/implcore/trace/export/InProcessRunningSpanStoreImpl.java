@@ -18,8 +18,8 @@ package io.opencensus.implcore.trace.export;
 
 import io.opencensus.implcore.trace.RecordEventsSpanImpl;
 import io.opencensus.implcore.trace.internal.ConcurrentIntrusiveList;
-import io.opencensus.trace.export.RunningSpanStore;
-import io.opencensus.trace.export.SpanData;
+import io.opencensus.spi.trace.export.RunningSpanStore;
+import io.opencensus.spi.trace.export.SpanData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

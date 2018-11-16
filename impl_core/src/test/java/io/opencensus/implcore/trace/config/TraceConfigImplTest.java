@@ -18,7 +18,7 @@ package io.opencensus.implcore.trace.config;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opencensus.trace.config.TraceParams;
+import io.opencensus.spi.trace.config.TraceParams;
 import io.opencensus.trace.samplers.Samplers;
 import org.junit.Test;
 import org.junit.runner.RunWith;

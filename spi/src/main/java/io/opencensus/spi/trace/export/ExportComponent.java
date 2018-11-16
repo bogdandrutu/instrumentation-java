@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.trace.export;
+package io.opencensus.spi.trace.export;
 
 import io.opencensus.trace.TraceOptions;
 

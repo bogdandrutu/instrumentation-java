@@ -21,6 +21,7 @@ import com.google.common.base.Splitter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.opencensus.common.Scope;
+import io.opencensus.spi.trace.SpiTracing;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -43,7 +44,7 @@ final class ZPageHttpHandler implements HttpHandler {
   ZPageHttpHandler(ZPageHandler zpageHandler) {
     this.zpageHandler = zpageHandler;
     this.httpServerSpanName = HTTP_SERVER + zpageHandler.getUrlPath();
-    Tracing.getExportComponent()
+    SpiTracing.getExportComponent()
         .getSampledSpanStore()
         .registerSpanNamesForCollection(Arrays.asList(httpServerSpanName));
   }

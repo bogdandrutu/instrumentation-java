@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package io.opencensus.trace.export;
+package io.opencensus.spi.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opencensus.common.Timestamp;
+import io.opencensus.spi.trace.export.SpanData.Attributes;
+import io.opencensus.spi.trace.export.SpanData.Links;
+import io.opencensus.spi.trace.export.SpanData.TimedEvent;
+import io.opencensus.spi.trace.export.SpanData.TimedEvents;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Link;
@@ -32,10 +36,6 @@ import io.opencensus.trace.SpanId;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
-import io.opencensus.trace.export.SpanData.Attributes;
-import io.opencensus.trace.export.SpanData.Links;
-import io.opencensus.trace.export.SpanData.TimedEvent;
-import io.opencensus.trace.export.SpanData.TimedEvents;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

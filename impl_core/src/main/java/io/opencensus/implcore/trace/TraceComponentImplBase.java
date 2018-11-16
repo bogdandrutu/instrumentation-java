@@ -24,10 +24,10 @@ import io.opencensus.implcore.trace.config.TraceConfigImpl;
 import io.opencensus.implcore.trace.export.ExportComponentImpl;
 import io.opencensus.implcore.trace.internal.RandomHandler;
 import io.opencensus.implcore.trace.propagation.PropagationComponentImpl;
+import io.opencensus.spi.trace.config.TraceConfig;
+import io.opencensus.spi.trace.export.ExportComponent;
 import io.opencensus.trace.TraceComponent;
 import io.opencensus.trace.Tracer;
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.export.ExportComponent;
 import io.opencensus.trace.propagation.PropagationComponent;
 
 /**

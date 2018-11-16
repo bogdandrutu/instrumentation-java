@@ -21,9 +21,9 @@ import static org.junit.Assert.fail;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanData;
 import io.opencensus.testing.export.TestHandler;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanData;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,12 +49,12 @@ public class UrlInstrumentationIT {
 
   @BeforeClass
   public static void beforeClass() {
-    Tracing.getExportComponent().getSpanExporter().registerHandler("test", testHandler);
+    SpiTracing.getExportComponent().getSpanExporter().registerHandler("test", testHandler);
   }
 
   @AfterClass
   public static void afterClass() {
-    Tracing.getExportComponent().getSpanExporter().unregisterHandler("test");
+    SpiTracing.getExportComponent().getSpanExporter().unregisterHandler("test");
   }
 
   @Test(timeout = 60000)

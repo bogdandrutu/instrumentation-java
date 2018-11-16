@@ -17,8 +17,8 @@
 package io.opencensus.exporter.trace.ocagent;
 
 import io.opencensus.common.Duration;
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanExporter.Handler;
+import io.opencensus.spi.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanExporter.Handler;
 import java.util.Collection;
 import javax.annotation.Nullable;
 

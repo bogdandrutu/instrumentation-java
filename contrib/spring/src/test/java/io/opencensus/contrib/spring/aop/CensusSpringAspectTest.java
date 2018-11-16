@@ -18,13 +18,13 @@ package io.opencensus.contrib.spring.aop;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.config.TraceParams;
+import io.opencensus.spi.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanExporter;
 import io.opencensus.testing.export.TestHandler;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.Status;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.config.TraceParams;
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanExporter;
 import io.opencensus.trace.samplers.Samplers;
 import java.util.List;
 import org.junit.After;
@@ -59,21 +59,21 @@ public class CensusSpringAspectTest {
   public void setup() {
     handler = new TestHandler();
 
-    SpanExporter exporter = Tracing.getExportComponent().getSpanExporter();
+    SpanExporter exporter = SpiTracing.getExportComponent().getSpanExporter();
     exporter.registerHandler("testing", handler);
 
     TraceParams params =
-        Tracing.getTraceConfig()
+        SpiTracing.getTraceConfig()
             .getActiveTraceParams()
             .toBuilder()
             .setSampler(Samplers.alwaysSample())
             .build();
-    Tracing.getTraceConfig().updateActiveTraceParams(params);
+    SpiTracing.getTraceConfig().updateActiveTraceParams(params);
   }
 
   @After
   public void teardown() {
-    SpanExporter exporter = Tracing.getExportComponent().getSpanExporter();
+    SpanExporter exporter = SpiTracing.getExportComponent().getSpanExporter();
     exporter.unregisterHandler("testing");
   }
 

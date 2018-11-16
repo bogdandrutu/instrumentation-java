@@ -24,9 +24,9 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.export.SpanExporter;
-import io.opencensus.trace.export.SpanExporter.Handler;
+import io.opencensus.spi.trace.SpiTracing;
+import io.opencensus.spi.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter.Handler;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -106,7 +106,7 @@ public final class StackdriverTraceExporter {
   private static void registerInternal(Handler newHandler) {
     synchronized (monitor) {
       handler = newHandler;
-      register(Tracing.getExportComponent().getSpanExporter(), newHandler);
+      register(SpiTracing.getExportComponent().getSpanExporter(), newHandler);
     }
   }
 
@@ -129,7 +129,7 @@ public final class StackdriverTraceExporter {
   public static void unregister() {
     synchronized (monitor) {
       checkState(handler != null, "Stackdriver exporter is not registered.");
-      unregister(Tracing.getExportComponent().getSpanExporter());
+      unregister(SpiTracing.getExportComponent().getSpanExporter());
       handler = null;
     }
   }

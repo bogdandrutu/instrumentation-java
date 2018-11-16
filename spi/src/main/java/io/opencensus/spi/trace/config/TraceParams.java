@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.trace.config;
+package io.opencensus.spi.trace.config;
 
 import com.google.auto.value.AutoValue;
 import io.opencensus.internal.Utils;
@@ -94,7 +94,7 @@ public abstract class TraceParams {
    * {@link Span}.
    *
    * @return the global default max number of {@code NetworkEvent} events per {@code Span}.
-   * @deprecated Use {@link getMaxNumberOfMessageEvents}.
+   * @deprecated Use {@link #getMaxNumberOfMessageEvents}.
    * @since 0.5
    */
   @Deprecated
@@ -178,7 +178,7 @@ public abstract class TraceParams {
      *     io.opencensus.trace.NetworkEvent} events per {@link Span}. It must be positive otherwise
      *     {@link #build()} will throw an exception.
      * @return this.
-     * @deprecated Use {@link setMaxNumberOfMessageEvents}.
+     * @deprecated Use {@link #setMaxNumberOfMessageEvents}.
      * @since 0.5
      */
     @Deprecated

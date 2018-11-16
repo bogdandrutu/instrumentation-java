@@ -16,8 +16,8 @@
 
 package io.opencensus.testing.export;
 
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;

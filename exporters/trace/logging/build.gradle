@@ -2,6 +2,7 @@ description = 'OpenCensus Trace Logging Exporter'
 
 dependencies {
     compile project(':opencensus-api'),
+            project(':opencensus-spi'),
             libraries.guava
 
     testCompile project(':opencensus-api')

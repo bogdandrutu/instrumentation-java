@@ -10,12 +10,14 @@ dependencies {
 
     compile project(':opencensus-api'),
             project(':opencensus-contrib-monitored-resource-util'),
+            project(':opencensus-spi'),
             libraries.grpc_core,
             libraries.grpc_netty,
             libraries.grpc_stub,
             libraries.opencensus_proto
 
-    testCompile project(':opencensus-api')
+    testCompile project(':opencensus-api'),
+            project(':opencensus-spi')
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
 }

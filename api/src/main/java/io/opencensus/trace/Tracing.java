@@ -19,8 +19,6 @@ package io.opencensus.trace;
 import io.opencensus.common.Clock;
 import io.opencensus.internal.DefaultVisibilityForTesting;
 import io.opencensus.internal.Provider;
-import io.opencensus.trace.config.TraceConfig;
-import io.opencensus.trace.export.ExportComponent;
 import io.opencensus.trace.propagation.PropagationComponent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,26 +62,6 @@ public final class Tracing {
    */
   public static Clock getClock() {
     return traceComponent.getClock();
-  }
-
-  /**
-   * Returns the global {@link ExportComponent}.
-   *
-   * @return the global {@code ExportComponent}.
-   * @since 0.5
-   */
-  public static ExportComponent getExportComponent() {
-    return traceComponent.getExportComponent();
-  }
-
-  /**
-   * Returns the global {@link TraceConfig}.
-   *
-   * @return the global {@code TraceConfig}.
-   * @since 0.5
-   */
-  public static TraceConfig getTraceConfig() {
-    return traceComponent.getTraceConfig();
   }
 
   // Any provider that may be used for TraceComponent can be added here.

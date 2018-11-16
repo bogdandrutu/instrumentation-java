@@ -34,6 +34,10 @@ import io.opencensus.proto.trace.v1.Span.SpanKind;
 import io.opencensus.proto.trace.v1.Span.TimeEvent;
 import io.opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent;
 import io.opencensus.proto.trace.v1.TraceConfig;
+import io.opencensus.spi.trace.config.TraceParams;
+import io.opencensus.spi.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanData.TimedEvent;
+import io.opencensus.spi.trace.export.SpanData.TimedEvents;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.Link;
 import io.opencensus.trace.Sampler;
@@ -44,10 +48,6 @@ import io.opencensus.trace.Status;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
-import io.opencensus.trace.config.TraceParams;
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanData.TimedEvent;
-import io.opencensus.trace.export.SpanData.TimedEvents;
 import io.opencensus.trace.samplers.Samplers;
 import java.util.List;
 import org.junit.Before;
@@ -62,7 +62,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class TraceProtoUtilsTest {
 
-  @Mock private io.opencensus.trace.config.TraceConfig mockTraceConfig;
+  @Mock private io.opencensus.spi.trace.config.TraceConfig mockTraceConfig;
 
   private static final TraceParams DEFAULT_PARAMS = TraceParams.DEFAULT;
 

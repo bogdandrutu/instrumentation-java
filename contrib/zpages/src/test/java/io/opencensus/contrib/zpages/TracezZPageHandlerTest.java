@@ -19,10 +19,10 @@ package io.opencensus.contrib.zpages;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.opencensus.spi.trace.export.RunningSpanStore;
+import io.opencensus.spi.trace.export.SampledSpanStore;
+import io.opencensus.spi.trace.export.SampledSpanStore.LatencyBucketBoundaries;
 import io.opencensus.trace.Status.CanonicalCode;
-import io.opencensus.trace.export.RunningSpanStore;
-import io.opencensus.trace.export.SampledSpanStore;
-import io.opencensus.trace.export.SampledSpanStore.LatencyBucketBoundaries;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Collections;

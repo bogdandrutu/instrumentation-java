@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opencensus.implcore.common.MillisClock;
 import io.opencensus.implcore.trace.TracerImpl;
-import io.opencensus.implcore.trace.export.ExportComponentImpl;
 import io.opencensus.trace.TraceComponent;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.propagation.PropagationComponent;
@@ -44,10 +43,5 @@ public class TracingTest {
   @Test
   public void implementationOfClock() {
     assertThat(Tracing.getClock()).isInstanceOf(MillisClock.class);
-  }
-
-  @Test
-  public void implementationOfTraceExporter() {
-    assertThat(Tracing.getExportComponent()).isInstanceOf(ExportComponentImpl.class);
   }
 }

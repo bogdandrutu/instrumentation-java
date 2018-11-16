@@ -19,7 +19,7 @@ package io.opencensus.implcore.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opencensus.implcore.internal.SimpleEventQueue;
-import io.opencensus.trace.export.ExportComponent;
+import io.opencensus.spi.trace.export.ExportComponent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

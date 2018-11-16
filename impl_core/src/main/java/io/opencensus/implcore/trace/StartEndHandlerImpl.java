@@ -21,8 +21,8 @@ import io.opencensus.implcore.trace.RecordEventsSpanImpl.StartEndHandler;
 import io.opencensus.implcore.trace.export.RunningSpanStoreImpl;
 import io.opencensus.implcore.trace.export.SampledSpanStoreImpl;
 import io.opencensus.implcore.trace.export.SpanExporterImpl;
+import io.opencensus.spi.trace.export.SpanData;
 import io.opencensus.trace.Span.Options;
-import io.opencensus.trace.export.SpanData;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 

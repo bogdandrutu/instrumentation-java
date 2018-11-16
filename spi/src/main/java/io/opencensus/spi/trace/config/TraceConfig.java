@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opencensus.trace.config;
+package io.opencensus.spi.trace.config;
 
 /**
  * Global configuration of the trace service. This allows users to change configs for the default

@@ -39,6 +39,10 @@ import io.opencensus.proto.trace.v1.Span.Tracestate.Entry;
 import io.opencensus.proto.trace.v1.Status;
 import io.opencensus.proto.trace.v1.TraceConfig;
 import io.opencensus.proto.trace.v1.TruncatableString;
+import io.opencensus.spi.trace.config.TraceParams;
+import io.opencensus.spi.trace.export.SpanData;
+import io.opencensus.spi.trace.export.SpanData.TimedEvent;
+import io.opencensus.spi.trace.export.SpanData.TimedEvents;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.MessageEvent.Type;
 import io.opencensus.trace.Sampler;
@@ -46,10 +50,6 @@ import io.opencensus.trace.Span.Kind;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
-import io.opencensus.trace.config.TraceParams;
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanData.TimedEvent;
-import io.opencensus.trace.export.SpanData.TimedEvents;
 import io.opencensus.trace.samplers.Samplers;
 import java.util.ArrayList;
 import java.util.List;
@@ -234,7 +234,7 @@ final class TraceProtoUtils {
   }
 
   private static Attributes toAttributesProto(
-      io.opencensus.trace.export.SpanData.Attributes attributes) {
+      io.opencensus.spi.trace.export.SpanData.Attributes attributes) {
     Attributes.Builder attributesBuilder =
         toAttributesBuilderProto(
             attributes.getAttributeMap(), attributes.getDroppedAttributesCount());
@@ -302,7 +302,7 @@ final class TraceProtoUtils {
         .build();
   }
 
-  private static Links toLinksProto(io.opencensus.trace.export.SpanData.Links links) {
+  private static Links toLinksProto(io.opencensus.spi.trace.export.SpanData.Links links) {
     final Links.Builder linksBuilder =
         Links.newBuilder().setDroppedLinksCount(links.getDroppedLinksCount());
     for (io.opencensus.trace.Link link : links.getLinks()) {
@@ -372,7 +372,7 @@ final class TraceProtoUtils {
   }
 
   // Creates a TraceConfig proto message with current TraceParams.
-  static TraceConfig getCurrentTraceConfig(io.opencensus.trace.config.TraceConfig traceConfig) {
+  static TraceConfig getCurrentTraceConfig(io.opencensus.spi.trace.config.TraceConfig traceConfig) {
     TraceParams traceParams = traceConfig.getActiveTraceParams();
     return toTraceConfigProto(traceParams);
   }
@@ -380,7 +380,7 @@ final class TraceProtoUtils {
   // Creates an updated TraceParams with the given UpdatedLibraryConfig message and current
   // TraceParams, then applies the updated TraceParams.
   static TraceParams getUpdatedTraceParams(
-      UpdatedLibraryConfig config, io.opencensus.trace.config.TraceConfig traceConfig) {
+      UpdatedLibraryConfig config, io.opencensus.spi.trace.config.TraceConfig traceConfig) {
     TraceParams currentParams = traceConfig.getActiveTraceParams();
     TraceConfig traceConfigProto = config.getConfig();
     return fromTraceConfigProto(traceConfigProto, currentParams);

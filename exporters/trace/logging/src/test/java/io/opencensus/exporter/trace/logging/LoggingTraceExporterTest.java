@@ -21,7 +21,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 
 import io.opencensus.exporter.trace.logging.LoggingTraceExporter.LoggingExporterHandler;
-import io.opencensus.trace.export.SpanExporter;
+import io.opencensus.spi.trace.export.SpanExporter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
