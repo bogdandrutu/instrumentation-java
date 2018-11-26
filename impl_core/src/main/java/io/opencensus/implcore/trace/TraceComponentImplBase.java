@@ -26,6 +26,8 @@ import io.opencensus.implcore.trace.internal.RandomHandler;
 import io.opencensus.implcore.trace.propagation.PropagationComponentImpl;
 import io.opencensus.spi.trace.config.TraceConfig;
 import io.opencensus.spi.trace.export.ExportComponent;
+import io.opencensus.trace.ScopeManager;
+import io.opencensus.trace.ScopeManagerImpl;
 import io.opencensus.trace.TraceComponent;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.propagation.PropagationComponent;
@@ -65,7 +67,7 @@ public final class TraceComponentImplBase {
             exportComponent.getRunningSpanStore(),
             exportComponent.getSampledSpanStore(),
             eventQueue);
-    tracer = new TracerImpl(randomHandler, startEndHandler, clock, traceConfig);
+    tracer = new TracerImpl(randomHandler, startEndHandler, clock, traceConfig, new ScopeManagerImpl());
   }
 
   public Tracer getTracer() {
