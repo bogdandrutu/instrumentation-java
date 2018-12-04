@@ -81,6 +81,8 @@ public abstract class Tracer {
     return noopTracer;
   }
 
+  public abstract ScopeManager getScopeManager();
+
   /**
    * Gets the current Span from the current Context.
    *
@@ -95,7 +97,7 @@ public abstract class Tracer {
    * @since 0.5
    */
   public final Span getCurrentSpan() {
-    Span currentSpan = CurrentSpanUtils.getCurrentSpan();
+    Span currentSpan = getScopeManager().activeSpan();
     return currentSpan != null ? currentSpan : BlankSpan.INSTANCE;
   }
 
@@ -151,7 +153,7 @@ public abstract class Tracer {
    */
   @MustBeClosed
   public final Scope withSpan(Span span) {
-    return CurrentSpanUtils.withSpan(Utils.checkNotNull(span, "span"), /* endSpan= */ false);
+    return getScopeManager().withSpan(Utils.checkNotNull(span, "span"), /* finishSpanOnClose= */ false);
   }
 
   /**
@@ -216,7 +218,7 @@ public abstract class Tracer {
    * @since 0.11.0
    */
   public final Runnable withSpan(Span span, Runnable runnable) {
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ false, runnable);
+    return getScopeManager().withSpan(span, /* finishSpanOnClose= */ false, runnable);
   }
 
   /**
@@ -281,7 +283,7 @@ public abstract class Tracer {
    * @since 0.11.0
    */
   public final <C> Callable<C> withSpan(Span span, final Callable<C> callable) {
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ false, callable);
+    return getScopeManager().withSpan(span, /* finishSpanOnClose= */ false, callable);
   }
 
   /**
@@ -351,6 +353,10 @@ public abstract class Tracer {
 
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
+    @Override
+    public ScopeManager getScopeManager() {
+        return ScopeManager.NoopScopeManager.INSTANCE;
+    }
 
     @Override
     public SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {

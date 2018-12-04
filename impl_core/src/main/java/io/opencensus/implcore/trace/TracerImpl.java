@@ -22,20 +22,29 @@ import io.opencensus.spi.trace.config.TraceConfig;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanBuilder;
 import io.opencensus.trace.SpanContext;
+import io.opencensus.trace.ScopeManager;
 import io.opencensus.trace.Tracer;
 import javax.annotation.Nullable;
 
 /** Implementation of the {@link Tracer}. */
 public final class TracerImpl extends Tracer {
   private final SpanBuilderImpl.Options spanBuilderOptions;
+  private final ScopeManager scopeManager;
 
   TracerImpl(
       RandomHandler randomHandler,
       RecordEventsSpanImpl.StartEndHandler startEndHandler,
       Clock clock,
-      TraceConfig traceConfig) {
+      TraceConfig traceConfig,
+      ScopeManager scopeManager) {
     spanBuilderOptions =
         new SpanBuilderImpl.Options(randomHandler, startEndHandler, clock, traceConfig);
+    this.scopeManager = scopeManager;
+  }
+
+  @Override
+  public ScopeManager getScopeManager() {
+      return scopeManager;
   }
 
   @Override
