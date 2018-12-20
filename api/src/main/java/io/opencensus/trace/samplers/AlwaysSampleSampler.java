@@ -36,8 +36,8 @@ final class AlwaysSampleSampler extends Sampler {
   public boolean shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
-      TraceId traceId,
-      SpanId spanId,
+      Object traceId,
+      Object spanId,
       String name,
       List<Span> parentLinks) {
     return true;

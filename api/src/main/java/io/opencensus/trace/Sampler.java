@@ -43,8 +43,8 @@ public abstract class Sampler {
   public abstract boolean shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
-      TraceId traceId,
-      SpanId spanId,
+      Object traceId,
+      Object spanId,
       String name,
       List<Span> parentLinks);
 

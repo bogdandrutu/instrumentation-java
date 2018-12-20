@@ -74,8 +74,8 @@ abstract class ProbabilitySampler extends Sampler {
   public final boolean shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
-      TraceId traceId,
-      SpanId spanId,
+      Object traceId,
+      Object spanId,
       String name,
       @Nullable List<Span> parentLinks) {
     // If the parent is sampled keep the sampling decision.
@@ -97,7 +97,7 @@ abstract class ProbabilitySampler extends Sampler {
     // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
     // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
     // code is executed in-line for every Span creation).
-    return Math.abs(traceId.getLowerLong()) < getIdUpperBound();
+    return Math.abs(((TraceId)traceId).getLowerLong()) < getIdUpperBound();
   }
 
   @Override

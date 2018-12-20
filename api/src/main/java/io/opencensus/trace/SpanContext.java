@@ -29,69 +29,15 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.5
  */
 @Immutable
-public final class SpanContext {
-  private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
-  private final TraceId traceId;
-  private final SpanId spanId;
-  private final TraceOptions traceOptions;
-  private final Tracestate tracestate;
+public abstract class SpanContext {
+  protected final TraceOptions traceOptions;
+  protected final Tracestate tracestate;
 
-  /**
-   * The invalid {@code SpanContext}.
-   *
-   * @since 0.5
-   */
-  public static final SpanContext INVALID =
-      new SpanContext(TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT);
+  public abstract String toTraceId();
 
-  /**
-   * Creates a new {@code SpanContext} with the given identifiers and options.
-   *
-   * @param traceId the trace identifier of the span context.
-   * @param spanId the span identifier of the span context.
-   * @param traceOptions the trace options for the span context.
-   * @return a new {@code SpanContext} with the given identifiers and options.
-   * @deprecated use {@link #create(TraceId, SpanId, TraceOptions, Tracestate)}.
-   */
-  @Deprecated
-  public static SpanContext create(TraceId traceId, SpanId spanId, TraceOptions traceOptions) {
-    return create(traceId, spanId, traceOptions, TRACESTATE_DEFAULT);
-  }
+  public abstract String toSpanId();
 
-  /**
-   * Creates a new {@code SpanContext} with the given identifiers and options.
-   *
-   * @param traceId the trace identifier of the span context.
-   * @param spanId the span identifier of the span context.
-   * @param traceOptions the trace options for the span context.
-   * @param tracestate the trace state for the span context.
-   * @return a new {@code SpanContext} with the given identifiers and options.
-   * @since 0.16
-   */
-  public static SpanContext create(
-      TraceId traceId, SpanId spanId, TraceOptions traceOptions, Tracestate tracestate) {
-    return new SpanContext(traceId, spanId, traceOptions, tracestate);
-  }
-
-  /**
-   * Returns the trace identifier associated with this {@code SpanContext}.
-   *
-   * @return the trace identifier associated with this {@code SpanContext}.
-   * @since 0.5
-   */
-  public TraceId getTraceId() {
-    return traceId;
-  }
-
-  /**
-   * Returns the span identifier associated with this {@code SpanContext}.
-   *
-   * @return the span identifier associated with this {@code SpanContext}.
-   * @since 0.5
-   */
-  public SpanId getSpanId() {
-    return spanId;
-  }
+  public abstract boolean isValid();
 
   /**
    * Returns the {@code TraceOptions} associated with this {@code SpanContext}.
@@ -113,53 +59,9 @@ public final class SpanContext {
     return tracestate;
   }
 
-  /**
-   * Returns true if this {@code SpanContext} is valid.
-   *
-   * @return true if this {@code SpanContext} is valid.
-   * @since 0.5
-   */
-  public boolean isValid() {
-    return traceId.isValid() && spanId.isValid();
-  }
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (obj == this) {
-      return true;
-    }
-
-    if (!(obj instanceof SpanContext)) {
-      return false;
-    }
-
-    SpanContext that = (SpanContext) obj;
-    return traceId.equals(that.traceId)
-        && spanId.equals(that.spanId)
-        && traceOptions.equals(that.traceOptions);
-  }
-
-  @Override
-  public int hashCode() {
-    return Arrays.hashCode(new Object[] {traceId, spanId, traceOptions});
-  }
-
-  @Override
-  public String toString() {
-    return "SpanContext{traceId="
-        + traceId
-        + ", spanId="
-        + spanId
-        + ", traceOptions="
-        + traceOptions
-        + "}";
-  }
-
-  private SpanContext(
-      TraceId traceId, SpanId spanId, TraceOptions traceOptions, Tracestate tracestate) {
-    this.traceId = traceId;
-    this.spanId = spanId;
-    this.traceOptions = traceOptions;
-    this.tracestate = tracestate;
+  protected SpanContext(TraceOptions traceOptions, Tracestate tracestate)
+  {
+      this.traceOptions = traceOptions;
+      this.tracestate = tracestate;
   }
 }

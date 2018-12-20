@@ -19,6 +19,7 @@ package io.opencensus.trace.propagation;
 import io.opencensus.common.ExperimentalApi;
 import io.opencensus.internal.Utils;
 import io.opencensus.trace.SpanContext;
+import io.opencensus.trace.SpanContextImpl;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -198,7 +199,7 @@ public abstract class TextFormat {
     public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return SpanContext.INVALID;
+      return SpanContextImpl.INVALID;
     }
   }
 }
