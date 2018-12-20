@@ -67,7 +67,7 @@ public abstract class Link {
    * @since 0.5
    */
   public static Link fromSpanContext(SpanContext context, Type type) {
-    return new AutoValue_Link(context.getTraceId(), context.getSpanId(), type, EMPTY_ATTRIBUTES);
+    return new AutoValue_Link(context, type, EMPTY_ATTRIBUTES);
   }
 
   /**
@@ -82,27 +82,12 @@ public abstract class Link {
   public static Link fromSpanContext(
       SpanContext context, Type type, Map<String, AttributeValue> attributes) {
     return new AutoValue_Link(
-        context.getTraceId(),
-        context.getSpanId(),
+        context,
         type,
         Collections.unmodifiableMap(new HashMap<String, AttributeValue>(attributes)));
   }
 
-  /**
-   * Returns the {@code TraceId}.
-   *
-   * @return the {@code TraceId}.
-   * @since 0.5
-   */
-  public abstract TraceId getTraceId();
-
-  /**
-   * Returns the {@code SpanId}.
-   *
-   * @return the {@code SpanId}
-   * @since 0.5
-   */
-  public abstract SpanId getSpanId();
+  public abstract SpanContext getSpanContext();
 
   /**
    * Returns the {@code Type}.

@@ -38,7 +38,7 @@ public final class BlankSpan extends Span {
   public static final BlankSpan INSTANCE = new BlankSpan();
 
   private BlankSpan() {
-    super(SpanContext.INVALID, null);
+    super(SpanContextImpl.INVALID, null);
   }
 
   /** No-op implementation of the {@link Span#putAttribute(String, AttributeValue)} method. */
