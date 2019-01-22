@@ -32,8 +32,21 @@ public abstract class TagContextBuilder {
    * @param value the {@code TagValue} to set for the given key.
    * @return this
    * @since 0.8
+   * @deprecated use {@link #put(TagKey, TagValue, TagScope)}.
    */
+  @Deprecated
   public abstract TagContextBuilder put(TagKey key, TagValue value);
+
+  /**
+   * Adds the key/value/scope regardless of whether the key is present.
+   *
+   * @param key the {@code TagKey} which will be set.
+   * @param value the {@code TagValue} to set for the given key.
+   * @param scope the {@code TagScope} to set for the given key.
+   * @return this
+   * @since 0.19
+   */
+  public abstract TagContextBuilder put(TagKey key, TagValue value, TagScope scope);
 
   /**
    * Removes the key if it exists.

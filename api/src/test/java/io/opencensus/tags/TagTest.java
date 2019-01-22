@@ -28,19 +28,34 @@ import org.junit.runners.JUnit4;
 public final class TagTest {
 
   @Test
-  public void testGetKey() {
-    assertThat(Tag.create(TagKey.create("k"), TagValue.create("v")).getKey())
-        .isEqualTo(TagKey.create("k"));
+  public void getters() {
+    Tag tag = Tag.create(TagKey.create("k"), TagValue.create("v"), TagScope.LOCAL);
+    assertThat(tag.getKey()).isEqualTo(TagKey.create("k"));
+    assertThat(tag.getValue()).isEqualTo(TagValue.create("v"));
+    assertThat(tag.getScope()).isEqualTo(TagScope.LOCAL);
   }
 
   @Test
+  @SuppressWarnings("deprecation")
+  public void defaultScope() {
+    assertThat(Tag.create(TagKey.create("k"), TagValue.create("v")).getScope())
+        .isEqualTo(TagScope.REQUEST);
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
   public void testTagEquals() {
     new EqualsTester()
         .addEqualityGroup(
             Tag.create(TagKey.create("Key"), TagValue.create("foo")),
             Tag.create(TagKey.create("Key"), TagValue.create("foo")))
-        .addEqualityGroup(Tag.create(TagKey.create("Key"), TagValue.create("bar")))
+        .addEqualityGroup(
+            Tag.create(TagKey.create("Key"), TagValue.create("bar")),
+            Tag.create(TagKey.create("Key"), TagValue.create("bar"), TagScope.REQUEST))
         .addEqualityGroup(Tag.create(TagKey.create("Key2"), TagValue.create("foo")))
+        .addEqualityGroup(
+            Tag.create(TagKey.create("Key"), TagValue.create("foo"), TagScope.LOCAL),
+            Tag.create(TagKey.create("Key"), TagValue.create("foo"), TagScope.LOCAL))
         .testEquals();
   }
 }

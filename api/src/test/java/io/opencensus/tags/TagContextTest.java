@@ -31,8 +31,8 @@ import org.junit.runners.JUnit4;
 /** Tests for {@link TagContext}. */
 @RunWith(JUnit4.class)
 public final class TagContextTest {
-  private static final Tag TAG1 = Tag.create(TagKey.create("key"), TagValue.create("val"));
-  private static final Tag TAG2 = Tag.create(TagKey.create("key2"), TagValue.create("val"));
+  private static final Tag TAG1 = Tag.create(TagKey.create("key"), TagValue.create("val"), TagScope.REQUEST);
+  private static final Tag TAG2 = Tag.create(TagKey.create("key2"), TagValue.create("val"), TagScope.REQUEST);
 
   @Test
   public void equals_IgnoresTagOrderAndTagContextClass() {

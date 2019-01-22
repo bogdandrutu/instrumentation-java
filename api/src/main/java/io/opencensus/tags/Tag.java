@@ -37,11 +37,24 @@ public abstract class Tag {
    * @param value the tag value.
    * @return a {@code Tag} with the given key and value.
    * @since 0.8
+   * @deprecated use {@link #create(TagKey, TagValue, TagScope)}.
    */
+  @Deprecated
   public static Tag create(TagKey key, TagValue value) {
-    return new AutoValue_Tag(key, value);
+    return new AutoValue_Tag(key, value, TagScope.REQUEST);
   }
 
+  /**
+   * Creates a {@code Tag} from the given key and value.
+   *
+   * @param key the tag key.
+   * @param value the tag value.
+   * @return a {@code Tag} with the given key and value.
+   * @since 0.19
+   */
+  public static Tag create(TagKey key, TagValue value, TagScope scope) {
+    return new AutoValue_Tag(key, value, scope);
+  }
   /**
    * Returns the tag's key.
    *
@@ -57,4 +70,12 @@ public abstract class Tag {
    * @since 0.8
    */
   public abstract TagValue getValue();
+
+  /**
+   * Returns the tag's value.
+   *
+   * @return the tag's value.
+   * @since 0.19
+   */
+  public abstract TagScope getScope();
 }
